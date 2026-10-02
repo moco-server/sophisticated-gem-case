@@ -1,3 +1,7 @@
 {
-    "item.sophisticated_gem_case.sample_token": "Sample Token"
+    "item.sophisticated_gem_case.gem_case_upgrade": "Gem Case Upgrade",
+    "item.sophisticated_gem_case.sample_token": "Sample Token",
+    "sophisticated_gem_case.error.backpack_only": "This upgrade requires a backpack",
+    "sophisticated_gem_case.error.duplicate": "Only one Gem Case upgrade is allowed",
+    "sophisticated_gem_case.error.not_empty": "Empty the Gem Case before removing it"
 }

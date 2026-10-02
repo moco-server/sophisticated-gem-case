@@ -92,6 +92,10 @@ val gametest =
         runtimeClasspath += sourceSets.main.get().output + sourceSets.main.get().runtimeClasspath
     }
 configurations[gametest.implementationConfigurationName].extendsFrom(configurations.implementation.get())
+// GameTestから本番のinternal実装を検収する。通常JARにはfixtureを入れない。
+kotlin.target.compilations
+    .getByName("gametest")
+    .associateWith(kotlin.target.compilations.getByName("main"))
 val fixtureMetadata =
     tasks.register<ProcessResources>("generateGameTestMetadata") {
         val values = mapOf("mod_id" to templateModId, "mod_version" to project.version.toString())

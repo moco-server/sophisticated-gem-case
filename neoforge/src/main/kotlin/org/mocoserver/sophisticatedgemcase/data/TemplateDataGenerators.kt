@@ -47,6 +47,7 @@ private class TemplateModels(
     helper: ExistingFileHelper,
 ) : ItemModelProvider(output, ModTemplate.ID, helper) {
     override fun registerModels() {
+        withExistingParent("gem_case_upgrade", mcLoc("item/generated")).texture("layer0", mcLoc("item/emerald"))
         withExistingParent("sample_token", mcLoc("item/generated")).texture("layer0", mcLoc("item/iron_nugget"))
     }
 }
@@ -58,5 +59,19 @@ private class TemplateLanguage(
 ) : LanguageProvider(output, ModTemplate.ID, locale) {
     override fun addTranslations() {
         add(ModItems.sampleToken.get(), itemName)
+        val japanese = itemName == "サンプルトークン"
+        add(ModItems.gemCaseUpgrade.get(), if (japanese) "Gem Caseアップグレード" else "Gem Case Upgrade")
+        add(
+            "sophisticated_gem_case.error.duplicate",
+            if (japanese) "専用アップグレードは一個までです" else "Only one Gem Case upgrade is allowed",
+        )
+        add(
+            "sophisticated_gem_case.error.not_empty",
+            if (japanese) "中身のある収納は取り外せません" else "Empty the Gem Case before removing it",
+        )
+        add(
+            "sophisticated_gem_case.error.backpack_only",
+            if (japanese) "バッグ専用です" else "This upgrade requires a backpack",
+        )
     }
 }

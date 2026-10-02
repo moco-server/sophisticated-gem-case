@@ -13,11 +13,15 @@ object ModTemplate {
 
     init {
         ModItems.registry.register(MOD_BUS)
+        ModDataComponents.registry.register(MOD_BUS)
         MOD_BUS.addListener(TemplateDataGenerators::gather)
         MOD_BUS.addListener(::addCreativeItems)
     }
 
     private fun addCreativeItems(event: BuildCreativeModeTabContentsEvent) {
-        if (event.tabKey == CreativeModeTabs.INGREDIENTS) event.accept(ModItems.sampleToken.get())
+        if (event.tabKey == CreativeModeTabs.INGREDIENTS) {
+            event.accept(ModItems.sampleToken.get())
+            event.accept(ModItems.gemCaseUpgrade.get())
+        }
     }
 }

@@ -1,3 +1,7 @@
 {
-    "item.sophisticated_gem_case.sample_token": "サンプルトークン"
+    "item.sophisticated_gem_case.gem_case_upgrade": "Gem Caseアップグレード",
+    "item.sophisticated_gem_case.sample_token": "サンプルトークン",
+    "sophisticated_gem_case.error.backpack_only": "バッグ専用です",
+    "sophisticated_gem_case.error.duplicate": "専用アップグレードは一個までです",
+    "sophisticated_gem_case.error.not_empty": "中身のある収納は取り外せません"
 }

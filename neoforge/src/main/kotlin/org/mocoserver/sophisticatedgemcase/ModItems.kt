@@ -9,6 +9,14 @@ import org.mocoserver.sophisticatedgemcase.core.checkedQuantity
 internal object ModItems {
     private const val MAX_STACK_SIZE = 64
     val registry: DeferredRegister.Items = DeferredRegister.createItems(ModTemplate.ID)
+    val gemCaseUpgrade: DeferredItem<org.mocoserver.sophisticatedgemcase.upgrade.GemCaseUpgradeItem> =
+        registry.register(
+            "gem_case_upgrade",
+            java.util.function.Supplier {
+                org.mocoserver.sophisticatedgemcase.upgrade
+                    .GemCaseUpgradeItem()
+            },
+        )
     val sampleToken: DeferredItem<Item> =
         registry.registerSimpleItem(
             "sample_token",
