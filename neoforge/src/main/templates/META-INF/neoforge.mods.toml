@@ -33,3 +33,6 @@ modId="minecraft"
 type="required"
 versionRange="[1.21.1,1.21.2)"
 side="BOTH"
+
+[[mixins]]
+config="sophisticated_gem_case.mixins.json"
