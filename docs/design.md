@@ -38,4 +38,6 @@ neoforgeはGemの識別とItemStack変換、登録、保存変換、実インベ
 
 最初の区切りの[実装計画](superpowers/plans/2026-10-02-gem-case-foundation.md)と[検証記録](verification.md)を参照する。依存版の正はcatalog／Gradle properties、公開JARの取得記録は[対応構成](compatibility.md)とする。
 
+工程2の[下位版設計案](superpowers/specs/2026-10-02-gem-case-storage-design.md)をレビュー用に作成した。保存・画面・操作・検証条件を具体化した案であり、追加component付きGemの扱いを含め、実装前の確認対象とする。
+
 後続設計で保存形式・未解決Gem IDの保持と互換方針、フィルタ条件の組み合わせと初期値、画面、アップグレード／変換アイテムの名前・見た目・レシピを決める。通常クラフトによる上位化の併設可否と、材料候補・競合レシピの選択順もその段階で決める。packへの採用は合意済みだが、今回packを変更・導入しない。
