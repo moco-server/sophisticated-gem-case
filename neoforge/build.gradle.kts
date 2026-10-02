@@ -175,6 +175,12 @@ val verifyModJar =
             listOf(
                 "$path/core/QuantityRulesKt.class",
                 "$path/ModItems.class",
+                "$path/core/GemCounts.class",
+                "$path/storage/GemStorageCodec.class",
+                "$path/menu/GemCaseContainer.class",
+                "$path/mixin/BackpackWrapperMixin.class",
+                "sophisticated_gem_case.mixins.json",
+                "assets/$templateModId/models/item/gem_case_upgrade.json",
                 "META-INF/neoforge.mods.toml",
                 "META-INF/LICENSE",
                 "assets/$templateModId/lang/en_us.json",

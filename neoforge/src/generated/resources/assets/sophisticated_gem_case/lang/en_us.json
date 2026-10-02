@@ -3,5 +3,14 @@
     "item.sophisticated_gem_case.sample_token": "Sample Token",
     "sophisticated_gem_case.error.backpack_only": "This upgrade requires a backpack",
     "sophisticated_gem_case.error.duplicate": "Only one Gem Case upgrade is allowed",
-    "sophisticated_gem_case.error.not_empty": "Empty the Gem Case before removing it"
+    "sophisticated_gem_case.error.not_empty": "Empty the Gem Case before removing it",
+    "sophisticated_gem_case.error.operation": "Operation rejected; check storage and destination",
+    "sophisticated_gem_case.error.unsafe_click": "Insert gems with a click or Shift-click",
+    "sophisticated_gem_case.gui.help": "Left:1 Right:stack Shift:inventory",
+    "sophisticated_gem_case.gui.insert": "Insert cursor",
+    "sophisticated_gem_case.gui.loading": "Synchronizing list",
+    "sophisticated_gem_case.gui.locked": "Storage locked; data retained",
+    "sophisticated_gem_case.gui.move": "Move from bag",
+    "sophisticated_gem_case.gui.search": "Search: ",
+    "sophisticated_gem_case.gui.title": "Gem Case"
 }

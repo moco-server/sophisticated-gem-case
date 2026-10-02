@@ -29,8 +29,20 @@ internal object ModDataComponents {
                 value: CustomData,
             ) {
                 val state = GemStorageCodec.read(value)
-                buffer.writeBoolean(state !is GemStorageState.Ready || state.counts.entries().isNotEmpty())
-                buffer.writeBoolean(state !is GemStorageState.Ready)
+                when (state) {
+                    is GemStorageState.Ready -> {
+                        buffer.writeBoolean(state.counts.entries().isNotEmpty())
+                        buffer.writeBoolean(false)
+                    }
+                    is GemStorageState.ClientSummary -> {
+                        buffer.writeBoolean(state.hasContents)
+                        buffer.writeBoolean(state.locked)
+                    }
+                    is GemStorageState.Locked -> {
+                        buffer.writeBoolean(true)
+                        buffer.writeBoolean(true)
+                    }
+                }
             }
 
             override fun decode(buffer: RegistryFriendlyByteBuf): CustomData =

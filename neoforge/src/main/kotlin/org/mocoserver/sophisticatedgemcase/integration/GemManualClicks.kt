@@ -2,6 +2,7 @@ package org.mocoserver.sophisticatedgemcase.integration
 
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
+import net.neoforged.fml.util.thread.SidedThreadGroups
 import net.p3pp3rf1y.sophisticatedcore.common.gui.StorageContainerMenuBase
 import org.mocoserver.sophisticatedgemcase.mixin.GemMergeInvoker
 import org.mocoserver.sophisticatedgemcase.storage.GemTransfers
@@ -17,7 +18,7 @@ internal object GemManualClicks {
     ): Boolean {
         val slot = menu.getSlot(slotId)
         val allowed = slot.mayPlace(menu.carried) && button in 0..1
-        if (allowed && !player.level().isClientSide && menu.stillValid(player)) {
+        if (allowed && Thread.currentThread().threadGroup == SidedThreadGroups.SERVER && menu.stillValid(player)) {
             val inventory = menu.storageWrapper.inventoryHandler
             val incoming = menu.carried.copyWithCount(if (button == 1) 1 else menu.carried.count)
             val wrapper = requireNotNull(GemCaseUpgradeItem.find(menu.storageWrapper))
@@ -48,7 +49,7 @@ internal object GemManualClicks {
         val allowed = (input.start until input.end).any { menu.getSlot(it).mayPlace(input.stack) }
         return if (wrapper == null || !allowed) {
             null
-        } else if (player.level().isClientSide) {
+        } else if (Thread.currentThread().threadGroup != SidedThreadGroups.SERVER || !menu.stillValid(player)) {
             input.stack.copy()
         } else {
             val limit = if (input.maxStack) minOf(input.stack.count, input.stack.maxStackSize) else input.stack.count

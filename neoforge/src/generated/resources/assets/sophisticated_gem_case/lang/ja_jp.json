@@ -3,5 +3,14 @@
     "item.sophisticated_gem_case.sample_token": "サンプルトークン",
     "sophisticated_gem_case.error.backpack_only": "バッグ専用です",
     "sophisticated_gem_case.error.duplicate": "専用アップグレードは一個までです",
-    "sophisticated_gem_case.error.not_empty": "中身のある収納は取り外せません"
+    "sophisticated_gem_case.error.not_empty": "中身のある収納は取り外せません",
+    "sophisticated_gem_case.error.operation": "操作できません。保存状態と取出先を確認してください",
+    "sophisticated_gem_case.error.unsafe_click": "GemはクリックかShiftで投入してください",
+    "sophisticated_gem_case.gui.help": "左:1 右:stack Shift:取出",
+    "sophisticated_gem_case.gui.insert": "カーソル投入",
+    "sophisticated_gem_case.gui.loading": "一覧を同期しています",
+    "sophisticated_gem_case.gui.locked": "保存を保持して操作停止",
+    "sophisticated_gem_case.gui.move": "一括移動",
+    "sophisticated_gem_case.gui.search": "検索: ",
+    "sophisticated_gem_case.gui.title": "Gem Case"
 }

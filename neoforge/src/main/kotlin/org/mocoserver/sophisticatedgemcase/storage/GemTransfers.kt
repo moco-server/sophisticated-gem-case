@@ -29,6 +29,7 @@ internal object GemTransfers {
     }
 
     fun moveFromNormal(storage: IStorageWrapper): Int {
+        if (Thread.currentThread().threadGroup != net.neoforged.fml.util.thread.SidedThreadGroups.SERVER) return 0
         val wrapper = GemCaseUpgradeItem.find(storage)
         val before = wrapper?.snapshot() as? GemStorageState.Ready
         return if (wrapper != null && before != null) move(storage, wrapper, before) else 0

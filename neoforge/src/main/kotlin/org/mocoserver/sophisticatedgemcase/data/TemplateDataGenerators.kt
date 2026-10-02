@@ -58,6 +58,28 @@ private class TemplateLanguage(
     private val itemName: String,
 ) : LanguageProvider(output, ModTemplate.ID, locale) {
     override fun addTranslations() {
+        val labels =
+            mapOf(
+                "title" to ("Gem Case" to "Gem Case"),
+                "search" to ("検索: " to "Search: "),
+                "insert" to ("カーソル投入" to "Insert cursor"),
+                "move" to ("一括移動" to "Move from bag"),
+                "loading" to ("一覧を同期しています" to "Synchronizing list"),
+                "locked" to ("保存を保持して操作停止" to "Storage locked; data retained"),
+                "help" to ("左:1 右:stack Shift:取出" to "Left:1 Right:stack Shift:inventory"),
+            )
+        labels.forEach { (key, names) ->
+            add(
+                "sophisticated_gem_case.gui.$key",
+                if (itemName ==
+                    "サンプルトークン"
+                ) {
+                    names.first
+                } else {
+                    names.second
+                },
+            )
+        }
         add(ModItems.sampleToken.get(), itemName)
         val japanese = itemName == "サンプルトークン"
         add(ModItems.gemCaseUpgrade.get(), if (japanese) "Gem Caseアップグレード" else "Gem Case Upgrade")
@@ -68,6 +90,14 @@ private class TemplateLanguage(
         add(
             "sophisticated_gem_case.error.not_empty",
             if (japanese) "中身のある収納は取り外せません" else "Empty the Gem Case before removing it",
+        )
+        add(
+            "sophisticated_gem_case.error.operation",
+            if (japanese) "操作できません。保存状態と取出先を確認してください" else "Operation rejected; check storage and destination",
+        )
+        add(
+            "sophisticated_gem_case.error.unsafe_click",
+            if (japanese) "GemはクリックかShiftで投入してください" else "Insert gems with a click or Shift-click",
         )
         add(
             "sophisticated_gem_case.error.backpack_only",

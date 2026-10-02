@@ -36,16 +36,29 @@ internal object GemCaseBridge {
             false
         } else {
             when {
-                clickType == ClickType.QUICK_CRAFT && carriedGem -> true
+                clickType == ClickType.QUICK_CRAFT && carriedGem -> rejectUnsafe(player)
                 normalSlot && clickType == ClickType.SWAP -> {
-                    button in 0 until player.inventory.containerSize &&
-                        StandardGem.keyOf(player.inventory.getItem(button)) != null
+                    val incomingGem =
+                        button in 0 until player.inventory.containerSize &&
+                            StandardGem.keyOf(player.inventory.getItem(button)) != null
+                    incomingGem && rejectUnsafe(player)
                 }
                 normalSlot && clickType == ClickType.PICKUP && carriedGem ->
                     GemManualClicks.insert(menu, slotId, button, player)
                 else -> false
             }
         }
+    }
+
+    private fun rejectUnsafe(player: Player): Boolean {
+        if (!player.level().isClientSide) {
+            player.displayClientMessage(
+                net.minecraft.network.chat.Component
+                    .translatable("sophisticated_gem_case.error.unsafe_click"),
+                true,
+            )
+        }
+        return true
     }
 
     @JvmStatic
@@ -55,8 +68,9 @@ internal object GemCaseBridge {
     ): ItemStack? {
         val toStorage = input.start >= 0 && input.end <= menu.numberOfStorageInventorySlots && input.start < input.end
         val fromPlayer =
-            menu.slots.drop(menu.numberOfStorageInventorySlots).any {
-                it.item === input.stack &&
+            menu.slots.any {
+                it.container === menu.playerForGemRouting().inventory &&
+                    it.item === input.stack &&
                     it.mayPickup(menu.playerForGemRouting())
             }
         val eligible = !merging.get() && toStorage && fromPlayer && StandardGem.keyOf(input.stack) != null

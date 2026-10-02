@@ -1,6 +1,7 @@
 package org.mocoserver.sophisticatedgemcase.storage
 
 import net.minecraft.world.item.ItemStack
+import net.neoforged.fml.util.thread.SidedThreadGroups
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper
 import net.p3pp3rf1y.sophisticatedcore.inventory.ITrackedContentsItemHandler
 import org.mocoserver.sophisticatedgemcase.core.GemCounts
@@ -16,6 +17,7 @@ internal class GemInputOutputHandler(
         stack: ItemStack,
         simulate: Boolean,
     ): ItemStack {
+        if (!simulate && Thread.currentThread().threadGroup != SidedThreadGroups.SERVER) return stack
         val permitted = slot in 0 until original.slots && original.isItemValid(slot, stack)
         val wrapper = if (permitted) GemCaseUpgradeItem.find(storage) else null
         val remainder =
@@ -33,6 +35,7 @@ internal class GemInputOutputHandler(
         stack: ItemStack,
         simulate: Boolean,
     ): ItemStack {
+        if (!simulate && Thread.currentThread().threadGroup != SidedThreadGroups.SERVER) return stack
         val permitted = (0 until original.slots).any { original.isItemValid(it, stack) }
         val wrapper = if (permitted) GemCaseUpgradeItem.find(storage) else null
         val remainder =

@@ -16,7 +16,21 @@ internal class GemCaseUpgradeWrapper(
     stack: ItemStack,
     saver: Consumer<ItemStack>,
 ) : UpgradeWrapperBase<GemCaseUpgradeWrapper, GemCaseUpgradeItem>(storage, stack, saver) {
-    fun snapshot(): GemStorageState = GemStorageCodec.read(upgrade.get(ModDataComponents.gemStorage.get()))
+    private var cachedData: net.minecraft.world.item.component.CustomData? = null
+    private var cachedState: GemStorageState? = null
+
+    fun snapshot(): GemStorageState {
+        val data = upgrade.get(ModDataComponents.gemStorage.get())
+        val previous = cachedState
+        return if (data === cachedData && previous != null) {
+            previous
+        } else {
+            GemStorageCodec.read(data).also {
+                cachedData = data
+                cachedState = it
+            }
+        }
+    }
 
     fun replace(
         expected: GemCounts,
