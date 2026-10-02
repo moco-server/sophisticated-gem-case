@@ -1,6 +1,6 @@
 # 下位Gem Caseアップグレードの設計案
 
-状態: レビュー用。実装前の設計確認待ち。起点はmainの`51f69c9`。
+状態: 2026-10-02の対話で承認済み。起点はmainの`51f69c9`。実装計画の確認へ進む。
 
 ## 目的と完了条件
 
@@ -18,7 +18,7 @@
 
 提案する既定方針は、標準Gemだけを個数保存し、名前変更など追加componentを持つGemは通常収納へ残すこと。実Gemアイテムであること、種類が解決済みであること、純度が種類の最低純度以上であることを確認した上で、作者APIで同じ種類・純度から作ったcount=1の標準stackとcomponentを比較する。入力個数は比較対象から除外する。純度を暗黙に補正して受け入れない。
 
-これにより取出時の再生成で追加データを失わない。ただし追加データ付きGemも専用収納へ入れる仕様にするなら、component別の保存と取出選択が必要になり、本案の個数保存と画面を変更する。ユーザーへこの選択を確認中であり、実装前に確定する。
+これにより取出時の再生成で追加データを失わない。追加component付きGemを通常収納に残す方針を設計とともに承認済み。将来それらも専用収納へ入れる場合は、component別の保存と取出選択を別途設計する。
 
 ## coreとNeoForgeの役割
 
@@ -94,4 +94,10 @@ Minecraft 1.21.1、NeoForge 21.1.252、Apotheosis 8.9.0、Sophisticated Backpack
 
 ## 設計レビュー記録
 
-独立したgpt-6-lunaによるレビューで、工程2のcapability境界と、保存・同期データの量的上限を明確にする指摘を受けた。上記に具体的なhandler境界と処理上限を追加し、再確認で解消された。再確認で追加されたslot別投入の制限迂回の指摘にも、元handlerの制限を先に守る契約と受け入れテストを追加した。追加component付きGemの扱いと本設計の採否はユーザー確認対象であり、本番コードはまだ追加していない。
+独立したgpt-6-lunaによるレビューで、工程2のcapability境界と、保存・同期データの量的上限を明確にする指摘を受けた。上記に具体的なhandler境界と処理上限を追加し、再確認で解消された。再確認で追加されたslot別投入の制限迂回の指摘にも、元handlerの制限を先に守る契約と受け入れテストを追加した。その後ユーザーが本設計を承認した。本番コードはまだ追加していない。
+
+## 実装計画作成時の確認
+
+通常ItemStack同期でもcomponentのnetwork codecが使われる。保存原文の転送を避けるため、永続codecとnetwork codecを分け、後者は中身有無とロック状態だけの要約を送る。一覧は上記のページ通信を使う。要約をサーバーの保存原文として受け入れない。[対象版のData Components公式資料](https://docs.neoforged.net/docs/1.21.1/items/datacomponents/)とローカルのMinecraft 1.21.1／NeoForge 21.1.252ソースで照合した。
+
+InventoryIOHandlerは内部でgetInventoryForUpgradeProcessingを取得する。工程2では処理用handler自体を変更せず、BackpackWrapper.getInventoryForInputOutputの戻り値へ専用層を置く。block capabilityの方向制限と失敗投入cache、item capabilityのUUID未付与時の拒否は既存側へ残す。具体的な対象メソッドとテストは[実装計画](../plans/2026-10-02-gem-case-storage.md)へ記載する。
