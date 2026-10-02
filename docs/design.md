@@ -49,3 +49,5 @@ neoforgeはGemの識別とItemStack変換、登録、保存変換、実インベ
 最初の区切りの[実装計画](superpowers/plans/2026-10-02-gem-case-foundation.md)と[検証記録](verification.md)を参照する。依存版の正はcatalog／Gradle properties、公開JARの取得記録は[対応構成](compatibility.md)とする。
 
 工程2の[下位版設計](superpowers/specs/2026-10-02-gem-case-storage-design.md)と[実装計画](superpowers/plans/2026-10-02-gem-case-storage.md)は承認済み。追加component付きGemは通常収納に残す。保存形式、未解決ID、画面操作、暫定入手方法は同仕様を参照する。後続では工程3の専用転送設定・フィルタ、工程4の加工材料とrecipe、最終見た目を設計する。packへの採用は合意済みだが、今回packを変更・導入しない。
+
+工程3の[連携設計](superpowers/specs/2026-10-03-gem-case-integration-design.md)は2026-10-03に承認済み。[実装計画](superpowers/plans/2026-10-03-gem-case-integration.md)を作成し、保存・回収・専用転送・設定画面・検収の5単位で進める。本番の連携コードはまだ変更していない。
