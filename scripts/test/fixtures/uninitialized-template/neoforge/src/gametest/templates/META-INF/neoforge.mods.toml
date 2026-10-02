@@ -1,0 +1,13 @@
+modLoader="javafml"
+loaderVersion="[4,)"
+license="MIT"
+[[mods]]
+modId="${mod_id}_tests"
+version="${mod_version}"
+displayName="GameTest Fixtures"
+[[dependencies.${mod_id}_tests]]
+modId="${mod_id}"
+type="required"
+versionRange="[0,)"
+ordering="AFTER"
+side="BOTH"

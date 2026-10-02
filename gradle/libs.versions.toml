@@ -1,0 +1,17 @@
+[versions]
+kotlin = "2.0.21"
+moddev = "2.0.148"
+kff = "5.5.0"
+detekt = "1.23.8"
+ktlint-plugin = "12.1.2"
+ktlint = "1.5.0"
+junit = "5.11.4"
+asm = "9.7.1"
+[libraries]
+kff = { module = "thedarkcolour:kotlinforforge-neoforge", version.ref = "kff" }
+junit-bom = { module = "org.junit:junit-bom", version.ref = "junit" }
+[plugins]
+kotlin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+moddev = { id = "net.neoforged.moddev", version.ref = "moddev" }
+detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
+ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint-plugin" }

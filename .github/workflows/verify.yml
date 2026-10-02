@@ -1,0 +1,83 @@
+name: Verify
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      verify-skills:
+        description: Verify optional Windows Git Bash skills installation
+        type: boolean
+        default: false
+permissions:
+  contents: read
+concurrency:
+  group: verify-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c # v5.0.2
+      - name: Script tests
+        run: node --test scripts/test/*.test.mjs
+      - name: Quality checks
+        run: ./gradlew check
+      - name: Generate data and require a clean resource tree
+        run: |
+          ./gradlew :neoforge:runData
+          changes=$(git status --porcelain --untracked-files=all -- neoforge/src/generated/resources)
+          test -z "$changes" || { printf '%s\n' "$changes"; exit 1; }
+      - name: Build and run GameTests
+        run: |
+          ./gradlew :neoforge:build :neoforge:verifyModJar :neoforge:runGameTestServer
+          node scripts/check-gametest-result.mjs
+      - name: Collect the single normal JAR
+        run: node scripts/collect-mod-jar.mjs
+      - uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5
+        with:
+          name: mod-jar
+          path: .local/artifact/*.jar
+          if-no-files-found: error
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c # v5.0.2
+      - name: Initialization tests
+        run: node --test scripts/test/init-template.test.mjs scripts/test/pnpm-command.test.mjs
+      - name: Install pnpm locally for Git Bash verification
+        if: github.event_name == 'workflow_dispatch' && inputs.verify-skills
+        run: npm install --prefix .local/windows-tools --ignore-scripts --no-audit --no-fund --package-lock=false pnpm@12.8.1
+      - name: Verify skills installation from a path with spaces
+        if: github.event_name == 'workflow_dispatch' && inputs.verify-skills
+        shell: bash
+        run: |
+          mkdir -p ".local/skills smoke/scripts"
+          cp scripts/install-skills.sh scripts/install-skills.mjs scripts/pnpm-command.mjs scripts/skills.tsv ".local/skills smoke/scripts/"
+          export PATH="$PWD/.local/windows-tools/node_modules/.bin:$PATH"
+          bash ".local/skills smoke/scripts/install-skills.sh"
+      - name: Quality and normal build
+        run: .\gradlew.bat check :neoforge:build :neoforge:verifyModJar

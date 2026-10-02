@@ -1,0 +1,22 @@
+name: 不具合報告
+description: 版・再現条件・観測結果を記録する
+body:
+  - type: textarea
+    id: versions
+    attributes:
+      label: 構成
+      description: MOD、Minecraft、loader、Java、依存MODの版とclient/serverの別
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: 再現手順と期待／実際の結果
+      description: 新規またはコピーしたワールドでの再現、入力・出力・保存状態も記載
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: ログ
+      description: 認証情報・個人情報を除いた原因例外と関連ログ

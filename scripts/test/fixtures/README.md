@@ -1,0 +1,3 @@
+# 初期化fixture
+
+未初期化のnamespace・package・設定を固定した専用fixture。実装scriptはテスト時にrepoからコピーする。生成先repoの名前や初期化済みmarkerに依存させない。変更対象を増やす場合は対応するfixtureと結果の検査を追加する。

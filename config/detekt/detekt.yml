@@ -1,0 +1,8 @@
+config:
+  validation: true
+style:
+  VarCouldBeVal:
+    active: true
+potential-bugs:
+  UnsafeCallOnNullableType:
+    active: true

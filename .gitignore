@@ -1,0 +1,11 @@
+.local/
+.gradle/
+**/build/
+.superpowers/
+node_modules/
+.kotlin/
+
+**/.cache/
+.agents/skills/neoforge-modding/
+.agents/skills/modrinth-api/
+skills-lock.json

@@ -1,0 +1,5 @@
+storeDir: .local/pnpm-store
+cacheDir: .local/pnpm-cache
+ignoreScripts: true
+engineStrict: true
+saveExact: true
