@@ -1,28 +1,32 @@
-# Kotlin MOD開発テンプレート
+# Sophisticated Gem Case
 
-Minecraft 1.21.1／NeoForge 21.1.252／Java 21向けの独立MODテンプレート。coreはゲームに依存しないKotlin/JVM、neoforgeは登録・イベント・datagen等のアダプタ。Fabric移植の実証は未実施。
+ApotheosisのGem CaseをSophisticated Backpacksへ組み込むKotlinアドオン。Minecraft 1.21.1／NeoForge 21.1.252／Java 21向けに開発する。作者: samunohito、ソースライセンス: MIT。
 
-[moco-server/minecraft-mod-template](https://github.com/moco-server/minecraft-mod-template)のUse this templateで独立repoを作り、Java 21をJAVA_HOMEへ指定する。Node 24／pnpm 12.8.1は初期化・skills導入用で、通常ビルドには不要。
+[Issue #1](https://github.com/moco-server/sophisticated-gem-case/issues/1)の開発基盤と連携調査を進めている。**Gemアップグレードは未実装**で、現在の通常JARには基盤検証用のsample_tokenだけが入る。完成済みのGem連携MODとして導入しない。
 
-```bash
-node scripts/init-template.mjs --mod-id example_gem --name '宝石ケース' \
-  --package org.example.gem --group org.example.mods \
-  --author '作者' --repo-url https://github.com/example/gem --dry-run
-```
+## 開発と検証
 
-変更対象を確認したら--dry-runを外して実行する。記録ファイル.template-initialized.jsonとtemplate-version.txtを管理する。再初期化は拒否する。
+Java 21のJDKをJAVA_HOMEへ指定し、Gradle Wrapperを使う。ホストの別版Javaをそのまま使わない。キャッシュをrepo内へ置く場合はGRADLE_USER_HOMEを`.local/gradle`へ指定する。
 
 ```bash
+node --test scripts/test/*.test.mjs
+./gradlew check
 ./gradlew :neoforge:runData
-./gradlew check :neoforge:build :neoforge:verifyModJar :neoforge:runGameTestServer
+# datagen後は別のGradle呼び出しでbuildする。
+./gradlew :neoforge:build :neoforge:verifyModJar :neoforge:runGameTestServer
+node scripts/check-gametest-result.mjs
 ```
 
-通常JARはneoforge/build/libs、起動環境は.local。配布時には対象版のKotlinForForge配布JARも必要（Mavenの開発用aggregateと区別する）。サンプルはmod_template:sample_token、鉄インゴット1個＋紙1個から1個作れる。
+初期化は完了済みで再実行しない。Node 24／pnpmは初期化・開発用scriptだけに使い、MOD本体と通常ビルドの依存にしない。外部skillsの導入は任意。
 
-開発エージェントは[AGENTS.md](AGENTS.md)、人は[開発手順](.agents/skills/mod-implement/references/development.md)と[規約](.agents/skills/mod-kotlin/references/coding-conventions.md)を読む。[構成と互換性](docs/compatibility.md)、[検証記録・手順](docs/verification.md)、[外部skills](docs/external-skills.md)、[更新・サンプル削除](docs/template-updates.md)も参照。
+`runClient`は開発限定のNeoForge版JEIを含み、`runData`はApotheosisのデータ生成に必要なGatewaysを含む。`runServer`・GameTestにはこの二つを入れない。起動環境は`.local`、通常JARは`neoforge/build/libs`。新規の専用サーバーでは初回起動時のEULA確認・受諾が別途必要。
 
-初期化後はdocs/design.mdを対象MODの現在の設計へ更新する。各MODの課題と保守は各repoで行い、pack側には導入版・取得元・ハッシュ・共存検証を残す。
+通常JARの実行にはKFFの配布JARと対象MOD・関連依存が必要。KFFのMaven開発用aggregate単体は配布JARの代わりにしない。固定版・取得元・hash・導入側は[対応構成](docs/compatibility.md)と[依存manifest](docs/dependency-manifest.json)を参照する。クライアント試遊は[検収手順](docs/client-acceptance.md)を参照。
 
-初版のクライアント検収状況は[検収手順](docs/client-acceptance.md)と検証記録を参照。公開範囲は非公開、ソースライセンスはMIT。
+## 設計と開発資料
 
-初版の判断・変更理由は[実装判断](docs/implementation-decisions.md)、実測と未検収項目は[検証記録](docs/verification.md)を参照。
+- [現在の設計](docs/design.md)、[連携調査](docs/integration-research.md)、[検証結果](docs/verification.md)
+- [AGENTS.md](AGENTS.md)、[開発手順](.agents/skills/mod-implement/references/development.md)、[規約](.agents/skills/mod-kotlin/references/coding-conventions.md)
+- [テンプレート更新](docs/template-updates.md)、[外部skills](docs/external-skills.md)
+
+生成元は[minecraft-mod-template](https://github.com/moco-server/minecraft-mod-template) 0.1.0。元の[検証履歴](docs/template-verification.md)・[実装判断](docs/implementation-decisions.md)・旧テンプレート計画は上流の参考資料で、このMODの検収済み機能を示すものではない。

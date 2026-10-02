@@ -1,4 +1,4 @@
-package org.mocoserver.modtemplate.core
+package org.mocoserver.sophisticatedgemcase.core
 
 /** 負の数量を拒否し、ゲーム側へ渡せる数量を返す。 */
 public fun checkedQuantity(value: Int): Int {

@@ -1,9 +1,9 @@
-package org.mocoserver.modtemplate
+package org.mocoserver.sophisticatedgemcase
 
 import net.minecraft.world.item.Item
 import net.neoforged.neoforge.registries.DeferredItem
 import net.neoforged.neoforge.registries.DeferredRegister
-import org.mocoserver.modtemplate.core.checkedQuantity
+import org.mocoserver.sophisticatedgemcase.core.checkedQuantity
 
 /** loader側でitemを登録する。coreへゲーム型を渡さない。 */
 internal object ModItems {

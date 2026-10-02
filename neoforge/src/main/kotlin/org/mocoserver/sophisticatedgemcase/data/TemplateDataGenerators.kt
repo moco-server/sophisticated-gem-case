@@ -1,4 +1,4 @@
-package org.mocoserver.modtemplate.data
+package org.mocoserver.sophisticatedgemcase.data
 
 import net.minecraft.core.HolderLookup
 import net.minecraft.data.PackOutput
@@ -11,9 +11,9 @@ import net.neoforged.neoforge.client.model.generators.ItemModelProvider
 import net.neoforged.neoforge.common.data.ExistingFileHelper
 import net.neoforged.neoforge.common.data.LanguageProvider
 import net.neoforged.neoforge.data.event.GatherDataEvent
-import org.mocoserver.modtemplate.ModItems
-import org.mocoserver.modtemplate.ModTemplate
-import org.mocoserver.modtemplate.core.checkedQuantity
+import org.mocoserver.sophisticatedgemcase.ModItems
+import org.mocoserver.sophisticatedgemcase.ModTemplate
+import org.mocoserver.sophisticatedgemcase.core.checkedQuantity
 import java.util.concurrent.CompletableFuture
 
 /** 対象版のnative providersでresourceを生成する。 */

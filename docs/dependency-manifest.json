@@ -1,0 +1,140 @@
+{
+  "minecraft": "1.21.1",
+  "neoforge": "21.1.252",
+  "java": 21,
+  "description": "検証基準の外部JAR。Gatewaysはdatagen限定、JEIは開発・試遊client限定。本アドオンのJAR hashはverification.mdに記録する。",
+  "artifacts": [
+    {
+      "slug": "apotheosis",
+      "version": "1.21.1-8.9.0",
+      "id": "veL1ccTb",
+      "filename": "Apotheosis-1.21.1-8.9.0.jar",
+      "url": "https://cdn.modrinth.com/data/rqFWfVlz/versions/veL1ccTb/Apotheosis-1.21.1-8.9.0.jar",
+      "sha256": "23a8b4a21d0d8744f097c77c8a96fcba14c4b95f3b1bb542412f40dab272872e",
+      "sha512": "b3022bc31f4e9f99d298c36486e09cad308d4aa87e2aa65a341809aeca41f0067e744086768884959036a46685d4c0babc4274600884ad8962fe9d080d8ef3ee",
+      "side": "BOTH",
+      "usage": "runtime",
+      "modrinth_version_url": "https://modrinth.com/mod/apotheosis/version/veL1ccTb"
+    },
+    {
+      "slug": "apothic-attributes",
+      "version": "1.21.1-2.10.0",
+      "id": "7r6iuon2",
+      "filename": "ApothicAttributes-1.21.1-2.10.0.jar",
+      "url": "https://cdn.modrinth.com/data/DGaH8Rh0/versions/7r6iuon2/ApothicAttributes-1.21.1-2.10.0.jar",
+      "sha256": "70a37cd4e1fa370e09fa645fca80339fa27c2c5b961e763ee2eaade3cb9d8426",
+      "sha512": "9d429a7efc650eb4c6124eb454fbc92f9d007488fb7637031fb741837f6f3e492add913b98395def434d74792de6f6b39804744f3e21250b2e0be57bac48ac9d",
+      "side": "BOTH",
+      "usage": "runtime",
+      "modrinth_version_url": "https://modrinth.com/mod/apothic-attributes/version/7r6iuon2"
+    },
+    {
+      "slug": "apothic-enchanting",
+      "version": "1.21.1-1.6.2",
+      "id": "2vH7csNR",
+      "filename": "ApothicEnchanting-1.21.1-1.6.2.jar",
+      "url": "https://cdn.modrinth.com/data/pL8MtgqY/versions/2vH7csNR/ApothicEnchanting-1.21.1-1.6.2.jar",
+      "sha256": "652406bc2e4c2d8488c93d35d38202390897e0ec6b4bc60b4813ce2fb6ad69f6",
+      "sha512": "e03864db8d32a60116dd9b870e7ba7f62564a85180c6b35cfd486deffef4c586254c527c45ab3c0750a4224d732d2c389d2ae84dbfae99ca7f70ee2ba9e7f9c6",
+      "side": "BOTH",
+      "usage": "runtime",
+      "modrinth_version_url": "https://modrinth.com/mod/apothic-enchanting/version/2vH7csNR"
+    },
+    {
+      "slug": "apothic-spawners",
+      "version": "1.21.1-1.4.0",
+      "id": "pWfxcfO2",
+      "filename": "ApothicSpawners-1.21.1-1.4.0.jar",
+      "url": "https://cdn.modrinth.com/data/DfxVkOAO/versions/pWfxcfO2/ApothicSpawners-1.21.1-1.4.0.jar",
+      "sha256": "f0cbc52ad606997789c36fac94ae651ab7e2e21c841e26a952c64041cad9cdbe",
+      "sha512": "2fdd49cdb3e6610846c3a746ab0730d6d49412eaf8c21e3d0b9d588d80c8cd1a1d0b7e19ade7fc86fd699ac02e270e5fa01fb5cf106d24a7740692ecc1ad8820",
+      "side": "BOTH",
+      "usage": "runtime",
+      "modrinth_version_url": "https://modrinth.com/mod/apothic-spawners/version/pWfxcfO2"
+    },
+    {
+      "slug": "jei",
+      "version": "19.51.0.418",
+      "id": "ufHUqt9b",
+      "filename": "jei-1.21.1-neoforge-19.51.0.418.jar",
+      "url": "https://cdn.modrinth.com/data/u6dRKJwZ/versions/ufHUqt9b/jei-1.21.1-neoforge-19.51.0.418.jar",
+      "sha256": "8bc3936d869e4040a5649c58b7e8be1c78c82a245c0dc07bdd68ab49121a222c",
+      "sha512": "a6ca3abc3080f6f41033a77cb955fefe9f9ebae795c33546227f555b2d31e8d4131cc705126d14a3fbabb31097fc0e876dc0bbeb05ad907a1b796f21e57527bf",
+      "side": "CLIENT",
+      "usage": "development-client",
+      "modrinth_version_url": "https://modrinth.com/mod/jei/version/ufHUqt9b"
+    },
+    {
+      "slug": "patchouli",
+      "version": "1.21-87-neoforge",
+      "id": "MY12jUBD",
+      "filename": "Patchouli-1.21-87-NEOFORGE.jar",
+      "url": "https://cdn.modrinth.com/data/nU0bVIaL/versions/MY12jUBD/Patchouli-1.21-87-NEOFORGE.jar",
+      "sha256": "45f017ed118095fac893b2c36d327f36c6a9a98e3ab771c0f026bbc7571e8551",
+      "sha512": "719845b6fa2502e8bef05f762a83eb827d7694f71b6853f5a2496accb9ac3140e502ed4817f4d3f1ec700c43b63ebde98a22f2fd9a17699ac008ad91888e383a",
+      "side": "BOTH",
+      "usage": "runtime",
+      "modrinth_version_url": "https://modrinth.com/mod/patchouli/version/MY12jUBD"
+    },
+    {
+      "slug": "placebo",
+      "version": "1.21.1-9.9.2",
+      "id": "1Ypo4tf4",
+      "filename": "Placebo-1.21.1-9.9.2.jar",
+      "url": "https://cdn.modrinth.com/data/tCkE8p2N/versions/1Ypo4tf4/Placebo-1.21.1-9.9.2.jar",
+      "sha256": "1a844a5b081813b1edb82656329e54d38389ed470f6a6516a5887f5303d7daad",
+      "sha512": "e8b4ba06fdbcdef8f936c39e7ba18bbfd326fad8d2512fd6cec80c899001b506a501b1aeac5eef2a1c2d7dd98f89ae3d94fac357c243027d623e59622bd295b5",
+      "side": "BOTH",
+      "usage": "runtime",
+      "modrinth_version_url": "https://modrinth.com/mod/placebo/version/1Ypo4tf4"
+    },
+    {
+      "slug": "sophisticated-backpacks",
+      "version": "1.21.1-3.26.6.2174",
+      "id": "pJxNzk4X",
+      "filename": "sophisticatedbackpacks-1.21.1-3.26.6.2174.jar",
+      "url": "https://cdn.modrinth.com/data/TyCTlI4b/versions/pJxNzk4X/sophisticatedbackpacks-1.21.1-3.26.6.2174.jar",
+      "sha256": "6240174bf8973c9453b87f2d71f5b9c907f418027e03c65dab62669d465c005b",
+      "sha512": "de88746802c53786c09defe878ff4e766b246a1146cd417f4985765bf032cedfb89f08778e7350820bdf67a3514ec63e58e9d8e76856332c265c1adbf7ef84b4",
+      "side": "BOTH",
+      "usage": "runtime",
+      "modrinth_version_url": "https://modrinth.com/mod/sophisticated-backpacks/version/pJxNzk4X"
+    },
+    {
+      "slug": "sophisticated-core",
+      "version": "1.21.1-1.5.2.2343",
+      "id": "blXGSmAb",
+      "filename": "sophisticatedcore-1.21.1-1.5.2.2343.jar",
+      "url": "https://cdn.modrinth.com/data/nmoqTijg/versions/blXGSmAb/sophisticatedcore-1.21.1-1.5.2.2343.jar",
+      "sha256": "d83fff0191031290e333807974d2621820d1d64d003bca5fa2ee64969f84cf94",
+      "sha512": "ecaf6db1348d61934cbce15e39bb211d9af33ae7d8f2a1bb770c911f317807c15f67450363c92b9fe178eb12e922842ddc733b54d09784b359b7677b9318b852",
+      "side": "BOTH",
+      "usage": "runtime",
+      "modrinth_version_url": "https://modrinth.com/mod/sophisticated-core/version/blXGSmAb"
+    },
+    {
+      "slug": "gateways",
+      "version": "1.21.1-5.1.0",
+      "id": "FNtkt80G",
+      "filename": "GatewaysToEternity-1.21.1-5.1.0.jar",
+      "url": "https://cdn.modrinth.com/data/8OIeAukW/versions/FNtkt80G/GatewaysToEternity-1.21.1-5.1.0.jar",
+      "sha256": "7e7df9c4e436ed0ac2a7728102724d5272dc2eef34c7df786074c8d27d888cd9",
+      "sha512": "83448ff2215b9a5d645bf9b0e0a0babfdfb04e60a2d9ca07783c962575b5770d095fdbfdd8ab6cb861871b98ecbc29204af3be14cb830623b442ad9894d462fb",
+      "side": "BOTH",
+      "usage": "datagen-only",
+      "modrinth_version_url": "https://modrinth.com/mod/gateways-to-eternity/version/FNtkt80G"
+    },
+    {
+      "slug": "kotlin-for-forge",
+      "version": "5.5.0",
+      "id": "tdvjylfz",
+      "filename": "kotlinforforge-5.5.0-all.jar",
+      "url": "https://cdn.modrinth.com/data/ordsPcFz/versions/tdvjylfz/kotlinforforge-5.5.0-all.jar",
+      "sha256": "ab635fdbe07e9c803ce7ceae4b40898595415a387cf03f2ef4d2c6c3fa251435",
+      "sha512": "4544a80300cac93ce92b44b2b73a386e6e568d7dfc0744dfb98b1f6c6cc3479cece8630155a2887e49b4120ebdb90441ec15a2e053f2d2d31fd58d28d1abb7b4",
+      "side": "BOTH",
+      "usage": "runtime",
+      "modrinth_version_url": "https://modrinth.com/mod/kotlin-for-forge/version/tdvjylfz"
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-package org.mocoserver.modtemplate.core
+package org.mocoserver.sophisticatedgemcase.core
 
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows

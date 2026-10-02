@@ -1,25 +1,45 @@
 # 対応構成と版の固定
 
-初期検証はMinecraft 1.21.1／NeoForge 21.1.252／Java 21。対応範囲は検証結果から判断する。
+## 検証の基準
 
-| ツール | 固定版 |
-| --- | --- |
-| Gradle | 8.12.1 |
-| ModDevGradle | 2.0.148 |
-| Kotlin | 2.0.21 |
-| KotlinForForge NeoForge | 5.5.0 |
-| detekt | 1.23.8 |
-| ktlint plugin／本体 | 12.1.2／1.5.0 |
-| JUnit | 5.11.4 |
+Minecraft 1.21.1／NeoForge 21.1.252／Java 21。Kotlin 2.0.21、KotlinForForge NeoForge 5.5.0、Gradle 8.12.1、ModDevGradle 2.0.148、detekt 1.23.8、ktlint plugin 12.1.2／本体1.5.0、JUnit 5.11.4を維持する。
 
-KFF 5.5.0の公開module metadataはKotlin 2.0.10を要求する。開発コンパイラ・stdlibは同世代の2.0.21に揃え、detekt 1.23.8のcompiler版と一致させた。KFFが提供するcoroutines等は実行環境の構成要素であり、サンプルでは使用しない。coreはKFFに依存しない。
+版の正はGradle properties／catalog。外部配布JARのURL・Modrinth版ID・SHA256・SHA512・sideは[dependency-manifest.json](dependency-manifest.json)に固定する。実取得物のSHA512を配布APIと照合し、SHA256を計算した。動作確認の範囲は[検証記録](verification.md)を参照し、別版への対応を断定しない。
 
-一次資料: [KFF metadata](https://thedarkcolour.github.io/KotlinForForge/thedarkcolour/kfflang-neoforge/5.5.0/kfflang-neoforge-5.5.0.module)、[detekt互換表](https://detekt.dev/docs/1.23.8/introduction/compatibility/)、[NeoForge 1.21.1](https://docs.neoforged.net/docs/1.21.1/gettingstarted/)。
+| MOD | 公開成果物の版 | 検証環境への導入 | 取得元 |
+| --- | --- | --- | --- |
+| apotheosis | 1.21.1-8.9.0 | client／server | [配布版](https://modrinth.com/mod/apotheosis/version/veL1ccTb) |
+| apothic-attributes | 1.21.1-2.10.0 | client／server | [配布版](https://modrinth.com/mod/apothic-attributes/version/7r6iuon2) |
+| apothic-enchanting | 1.21.1-1.6.2 | client／server | [配布版](https://modrinth.com/mod/apothic-enchanting/version/2vH7csNR) |
+| apothic-spawners | 1.21.1-1.4.0 | client／server | [配布版](https://modrinth.com/mod/apothic-spawners/version/pWfxcfO2) |
+| jei | 19.51.0.418 | 開発・試遊client限定 | [配布版](https://modrinth.com/mod/jei/version/ufHUqt9b) |
+| patchouli | 1.21-87-neoforge | client／server | [配布版](https://modrinth.com/mod/patchouli/version/MY12jUBD) |
+| placebo | 1.21.1-9.9.2 | client／server | [配布版](https://modrinth.com/mod/placebo/version/1Ypo4tf4) |
+| sophisticated-backpacks | 1.21.1-3.26.6.2174 | client／server | [配布版](https://modrinth.com/mod/sophisticated-backpacks/version/pJxNzk4X) |
+| sophisticated-core | 1.21.1-1.5.2.2343 | client／server | [配布版](https://modrinth.com/mod/sophisticated-core/version/blXGSmAb) |
+| gateways | 1.21.1-5.1.0 | datagen限定 | [配布版](https://modrinth.com/mod/gateways-to-eternity/version/FNtkt80G) |
+| kotlin-for-forge | 5.5.0 | client／server | [配布版](https://modrinth.com/mod/kotlin-for-forge/version/tdvjylfz) |
 
-Kotlinコンパイルはin-processとし、独立Kotlin daemonのユーザー共通書き込み先を使わない。core単体テスト、型解決付きdetekt、通常JARビルドは実行成功。VarCouldBeValの故意違反も検出した。起動・配布用環境・クライアント検収は後続の記録を参照。
+Apotheosis／Sophisticated Backpacks／Sophisticated Coreを本アドオンの直接必須依存としてmetadataに宣言する。Apotheosisの配布JARはPlacebo 9.9.2以上、Apothic Attributes 2.10.0以上を必須とする。Apothic Spawners／EnchantingはJAR内ではoptionalだが、Modrinth APIと作者の公開依存一覧はrequiredとするため、初期検証では両方を含める。Patchouliも公開依存一覧に従って含める。この差を理由に本アドオンの必須依存を増やさない。
 
-Wrapperは配布SHA256を固定する。初版では動的版指定を避け、coreとbuildSrcのcompile/runtimeおよびtest compile/runtime classpathをGradle lockfileで固定する。変更時は両buildのcheck --write-locksを明示実行する。loaderのModDevGradle内部configurationとOS別の実行用artifactはlocking対象にしていない。ModDevGradleが生成するMinecraft artifactまで一律checksum検証に入れると再生成artifactが混ざるため、追加のverificationは手書きせず適用範囲を確認して導入する。
+SophisticatedのJAR名にはbuild番号があるが、MOD metadataの版はBackpacks `3.26.6`／Core `1.5.2`。本アドオンのversionRangeはこの宣言版を使用し、build番号までの固定はcatalogと配布JAR hashで行う。対応宣言を未検証の将来版へ広げない。
 
-追加の全artifact checksum verificationは初版では未導入。Wrapper checksumと固定依存、core／buildSrc lock、実取得物のhash記録を使う。Minecraft生成artifactとOS別nativeの検証範囲を確認してから追加する。
+GradleはModrinth Mavenを`maven.modrinth`グループに限定して使う。公開版番号から取得した本番依存JARはmanifestの配布物と照合する。JEIは同じ`19.51.0.418`でFabric版も存在するため、NeoForge版ID `ufHUqt9b`で取得する。単なる版番号指定ではFabric JARが選ばれ、クライアント起動時にスキップされたことを実測した。
 
-配布環境では[作者のKotlinForForge 5.5.0配布JAR](https://modrinth.com/mod/kotlin-for-forge/version/tdvjylfz)を使う。Mavenのkotlinforforge-neoforge-5.5.0-all.jarはstdlib等のみの開発用aggregateであり、単体ではlanguage providerを含まない。Gradle側では推移依存のkfflang／kffmodも解決されるためdev起動が成功する。配布用kotlinforforge-5.5.0-all.jarとは区別する。配布実行時stdlibは2.0.10、開発compiler／core stdlibは2.0.21で、サンプルの通常JAR起動も別に検証する。
+## 実行別の開発依存
+
+- clientDevelopment source setはmainの依存・runtime classpathを継承し、NeoForge版JEIを追加する。runClientだけで使用する。
+- dataDevelopment source setは同じ基盤へGatewaysを追加し、runDataだけで使用する。Apotheosis 8.9.0のGatherDataEventは任意連携のGatewayRegistryなどを参照するため、GatewaysなしのdatagenはNoClassDefFoundErrorになる。
+- runServer／GameTest／通常JARにはJEIとGatewaysを入れない。通常JARにはcoreと必要resourcesだけを含める。
+
+ModDevGradle 2.0.148のadditionalRuntimeClasspathConfigurationはlegacy classpathへ入れるため、外部MODの検出用には使わない。この経路ではGatewaysがMod Listへ入らず、Placeboの型を解決できなかった。source setの実行用runtimeとmainのMinecraft classpathを両方継承する必要がある。
+
+一次資料: [ModDevGradle 2.0.148 sources](https://maven.neoforged.net/releases/net/neoforged/moddev-gradle/2.0.148/moddev-gradle-2.0.148-sources.jar)、[Apotheosisの固定ソース](https://github.com/Shadows-of-Fire/Apotheosis/blob/7dd7cec26830074f1745529eb8f1f533092733d0/src/main/java/dev/shadowsoffire/apotheosis/Apotheosis.java)、[作者の依存設定](https://github.com/Shadows-of-Fire/Apotheosis/blob/7dd7cec26830074f1745529eb8f1f533092733d0/gradle.properties)。JAR metadataも実物を照合した。
+
+## Kotlinと再現性
+
+KFFのMaven開発用aggregateは配布用JARと異なる。専用サーバーと試遊clientでは作者配布の`kotlinforforge-5.5.0-all.jar`を使う。配布実行時stdlibは2.0.10、開発compilerは2.0.21であり、通常JARの起動を別に確認する。coreはKFFに依存しない。
+
+Wrapperのchecksumと既存のcore／buildSrc lockfileを維持する。NeoForge側の内部生成artifactを含めた全依存のchecksum verificationは未導入。coreは連携MOD・関連MODの禁止prefixを追加し、本番classpathとbytecodeを検査する。
+
+Java 21は既存のEclipse Adoptium 21.0.12.1を読み取り利用した。GRADLE_USER_HOMEはこのrepoの`.local/gradle`で、既存cacheのコピーをseedにした。起動環境・ログ・新規ワールドはこのrepoの`.local`へ置き、親packの環境は変更していない。

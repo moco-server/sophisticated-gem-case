@@ -1,4 +1,4 @@
-package org.mocoserver.modtemplate.tests
+package org.mocoserver.sophisticatedgemcase.tests
 
 import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.gametest.framework.GameTest
@@ -10,8 +10,8 @@ import net.minecraft.world.item.crafting.CraftingInput
 import net.minecraft.world.item.crafting.RecipeType
 import net.neoforged.neoforge.gametest.GameTestHolder
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate
-import org.mocoserver.modtemplate.ModTemplate
-import org.mocoserver.modtemplate.core.checkedQuantity
+import org.mocoserver.sophisticatedgemcase.ModTemplate
+import org.mocoserver.sophisticatedgemcase.core.checkedQuantity
 
 /** 本番item・core契約・実際のrecipe lookupを別source setで検査する。 */
 @GameTestHolder(ModTemplate.ID)

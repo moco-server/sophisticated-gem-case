@@ -1,0 +1,9 @@
+{
+  "templateVersion": "0.1.0",
+  "modId": "sophisticated_gem_case",
+  "package": "org.mocoserver.sophisticatedgemcase",
+  "group": "org.mocoserver",
+  "name": "Sophisticated Gem Case",
+  "author": "samunohito",
+  "repoUrl": "https://github.com/moco-server/sophisticated-gem-case"
+}

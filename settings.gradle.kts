@@ -4,5 +4,5 @@ pluginManagement {
         maven("https://maven.neoforged.net/releases")
     }
 }
-rootProject.name = "minecraft-mod-template"
+rootProject.name = "sophisticated_gem_case"
 include("core", "neoforge")

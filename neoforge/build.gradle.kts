@@ -7,6 +7,9 @@ kotlin { jvmToolchain(21) }
 val templateModId = providers.gradleProperty("mod_id").get()
 base { archivesName.set(templateModId) }
 repositories {
+    maven("https://api.modrinth.com/maven") {
+        content { includeGroup("maven.modrinth") }
+    }
     maven("https://thedarkcolour.github.io/KotlinForForge/") {
         content { includeGroup("thedarkcolour") }
     }
@@ -14,6 +17,14 @@ repositories {
 dependencies {
     implementation(project(":core"))
     implementation(libs.kff)
+    implementation(libs.apotheosis)
+    implementation(libs.sophisticated.backpacks)
+    implementation(libs.sophisticated.core)
+    implementation(libs.placebo)
+    implementation(libs.apothic.attributes)
+    runtimeOnly(libs.patchouli)
+    runtimeOnly(libs.apothic.spawners)
+    runtimeOnly(libs.apothic.enchanting)
 }
 val metadata =
     tasks.register<ProcessResources>("generateModMetadata") {
@@ -35,7 +46,23 @@ val metadata =
                     .replace("\n", "\\n")
                     .replace("\r", "\\r")
                     .replace("\t", "\\t")
-            }
+            } +
+                mapOf(
+                    "apotheosis_version" to
+                        libs.versions.apotheosis
+                            .get()
+                            .substringAfter("1.21.1-"),
+                    "backpacks_version" to
+                        libs.versions.sophisticated.backpacks
+                            .get()
+                            .substringAfter("1.21.1-")
+                            .substringBeforeLast('.'),
+                    "core_version" to
+                        libs.versions.sophisticated.core
+                            .get()
+                            .substringAfter("1.21.1-")
+                            .substringBeforeLast('.'),
+                )
         inputs.properties(properties)
         filteringCharset = "UTF-8"
         expand(properties)
@@ -45,6 +72,19 @@ val metadata =
 sourceSets.main {
     resources.srcDir(metadata)
     resources.srcDir("src/generated/resources")
+}
+// 実行別のMODはlegacy classpathでは検出されないため、専用source setのruntimeへ置く。
+val clientDevelopment = sourceSets.create("clientDevelopment")
+val dataDevelopment = sourceSets.create("dataDevelopment")
+listOf(clientDevelopment, dataDevelopment).forEach { development ->
+    development.runtimeClasspath += sourceSets.main.get().output + sourceSets.main.get().runtimeClasspath
+    configurations[development.implementationConfigurationName].extendsFrom(configurations.implementation.get())
+    configurations[development.runtimeOnlyConfigurationName].extendsFrom(configurations.runtimeOnly.get())
+}
+dependencies {
+    add(clientDevelopment.runtimeOnlyConfigurationName, libs.jei)
+    // Apotheosis 8.9.0のGatherDataEventは任意連携Gatewaysの型も参照する。
+    add(dataDevelopment.runtimeOnlyConfigurationName, libs.gateways)
 }
 val gametest =
     sourceSets.create("gametest") {
@@ -73,6 +113,7 @@ neoForge {
     runs {
         create("client") {
             client()
+            sourceSet = clientDevelopment
             gameDirectory.set(rootProject.file(".local/client"))
         }
         create("server") {
@@ -82,6 +123,7 @@ neoForge {
         }
         create("data") {
             data()
+            sourceSet = dataDevelopment
             gameDirectory.set(rootProject.file(".local/data"))
             programArguments.addAll(
                 "--mod",

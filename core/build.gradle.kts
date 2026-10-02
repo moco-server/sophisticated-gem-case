@@ -15,6 +15,7 @@ dependencies {
 tasks.test { useJUnitPlatform() }
 val checkCoreBoundary =
     tasks.register<CoreBoundaryTask>("checkCoreBoundary") {
+        forbiddenPackagePrefixes.addAll("dev/shadowsoffire/", "net/p3pp3rf1y/", "vazkii/patchouli/")
         productionClasspath.from(configurations.compileClasspath, configurations.runtimeClasspath)
         productionClasses.from(sourceSets.main.map { it.output.classesDirs })
         dependsOn(tasks.classes)
