@@ -32,7 +32,11 @@ internal class GemProcessingHandler(
     }
 
     override fun isInsertBlocked(): Boolean {
-        if (GemOperationContext.routingSuppressed(storage)) return original.isInsertBlocked
+        if (GemOperationContext.isExclusive(storage) ||
+            GemOperationContext.routingSuppressed(storage)
+        ) {
+            return original.isInsertBlocked
+        }
         val wrapper = GemCaseUpgradeItem.find(storage)
         return original.isInsertBlocked && !hasDedicatedSpace(wrapper)
     }
@@ -43,7 +47,11 @@ internal class GemProcessingHandler(
         permitted: Boolean,
         delegateInsert: (ItemStack) -> ItemStack,
     ): ItemStack {
-        if (!simulate && Thread.currentThread().threadGroup != SidedThreadGroups.SERVER) return stack
+        if (GemOperationContext.isExclusive(storage) ||
+            (!simulate && Thread.currentThread().threadGroup != SidedThreadGroups.SERVER)
+        ) {
+            return stack
+        }
         val wrapper =
             if (permitted &&
                 !GemOperationContext.routingSuppressed(storage)

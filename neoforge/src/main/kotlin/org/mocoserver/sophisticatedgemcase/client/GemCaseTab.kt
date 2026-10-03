@@ -19,14 +19,21 @@ import org.mocoserver.sophisticatedgemcase.storage.StandardGem
 import java.util.Locale
 import java.util.UUID
 
-/** バッグの既存タブに表示し、入力は瞬間操作としてserverへ要求する。 */
+/** バッグの既存タブ内で収納一覧と設定画面を切り替える。 */
 internal class GemCaseTab(
     container: GemCaseContainer,
     position: Position,
     screen: StorageScreenBase<*>,
 ) : UpgradeSettingsTab<GemCaseContainer>(container, position, screen, label("title"), label("help")) {
+    private val viewState = GemSettingsViewState()
     private val panel =
-        addHideableChild(GemCasePanel(container, Position(x + PANEL_OFFSET_X, y + PANEL_OFFSET_Y), screen))
+        addHideableChild(GemCasePanel(container, Position(x + PANEL_OFFSET_X, y + PANEL_OFFSET_Y), screen, viewState))
+
+    @Suppress("unused")
+    private val settingsPanel =
+        addHideableChild(
+            GemSettingsPanel(container, screen, viewState, Position(x + PANEL_OFFSET_X, y + PANEL_OFFSET_Y)),
+        )
 
     override fun moveSlotsToTab() = Unit
 
@@ -39,15 +46,33 @@ internal class GemCaseTab(
 
 private const val PANEL_OFFSET_X = 3
 private const val PANEL_OFFSET_Y = 24
+private const val PANEL_WIDTH = 200
+private const val PANEL_HEIGHT = 205
+private const val PADDING = 4
+private const val VIEW_HEIGHT = 18
+private const val SEARCH_Y = 20
+private const val LIST_Y = 34
+private const val PURITY_Y = 96
+private const val ROW_HEIGHT = 12
+private const val VISIBLE_ROWS = 5
+private const val BUTTON_Y = 160
+private const val BUTTON_HEIGHT = 16
+private const val STATUS_Y = 184
+private const val BACKGROUND = -14671840
+private const val FOREGROUND = -1
+private const val SELECTED = -256
+private const val UNRESOLVED = -21846
+private const val BUTTON_COLOR = -11184811
 
 private fun label(key: String): Component = Component.translatable("sophisticated_gem_case.gui.$key")
 
-/** 検索とスクロールは表示だけを変える。native Widgetの描画・入力・focusを同じpanelで管理する。 */
+/** 個数一覧だけを扱う。設定編集はGemSettingsPanelに分離する。 */
 @Suppress("TooManyFunctions")
 private class GemCasePanel(
     private val container: GemCaseContainer,
     position: Position,
     private val screen: StorageScreenBase<*>,
+    private val viewState: GemSettingsViewState,
 ) : WidgetBase(position, Dimension(PANEL_WIDTH, PANEL_HEIGHT)) {
     private var search = ""
     private var searchFocused = false
@@ -73,7 +98,7 @@ private class GemCasePanel(
         mouseX: Int,
         mouseY: Int,
     ) {
-        graphics.fill(x, y, x + width, y + height, BACKGROUND)
+        if (!viewState.settings) graphics.fill(x, y, x + width, y + height, BACKGROUND)
     }
 
     override fun renderWidget(
@@ -82,12 +107,14 @@ private class GemCasePanel(
         mouseY: Int,
         partialTick: Float,
     ) {
+        if (viewState.settings) return
+        drawViews(graphics)
         refreshGroups()
         graphics.drawString(
             font,
             font.plainSubstrByWidth(label("search").string + search, PANEL_WIDTH - PADDING * 2),
             x + PADDING,
-            y + PADDING,
+            y + SEARCH_Y,
             FOREGROUND,
             false,
         )
@@ -112,6 +139,13 @@ private class GemCasePanel(
         )
     }
 
+    private fun drawViews(graphics: GuiGraphics) {
+        graphics.fill(x, y, x + PANEL_WIDTH / 2 - 1, y + VIEW_HEIGHT, BUTTON_COLOR)
+        graphics.fill(x + PANEL_WIDTH / 2 + 1, y, x + PANEL_WIDTH, y + VIEW_HEIGHT, BUTTON_COLOR)
+        graphics.drawString(font, label("storage"), x + PADDING, y + PADDING, SELECTED, false)
+        graphics.drawString(font, label("settings"), x + PANEL_WIDTH / 2 + PADDING, y + PADDING, FOREGROUND, false)
+    }
+
     private fun refreshGroups() {
         val current = cache()
         if (renderedRevision != current.revision ||
@@ -134,8 +168,7 @@ private class GemCasePanel(
 
     private fun filtered(): List<Group> =
         groups.filter {
-            it.name.lowercase(Locale.ROOT).contains(search.lowercase(Locale.ROOT)) ||
-                it.id.contains(search)
+            it.name.lowercase(Locale.ROOT).contains(search.lowercase(Locale.ROOT)) || it.id.contains(search)
         }
 
     private fun drawGroups(graphics: GuiGraphics) {
@@ -155,18 +188,12 @@ private class GemCasePanel(
     }
 
     private fun purityRows(): List<GemPageEntry> {
-        val group = groups.firstOrNull { it.id == selected }
+        val group = groups.firstOrNull { it.id == selected } ?: return emptyList()
         val known =
             dev.shadowsoffire.apotheosis.socket.gem.Purity.entries
                 .map { it.serializedName }
-        return if (group ==
-            null
-        ) {
-            emptyList()
-        } else {
-            (known + group.entries.map { it.key.purity }.filter { it !in known }).map { name ->
-                group.entries.firstOrNull { it.key.purity == name } ?: GemPageEntry(GemKey(group.id, name), 0, false)
-            }
+        return (known + group.entries.map { it.key.purity }.filter { it !in known }).map { purity ->
+            group.entries.firstOrNull { it.key.purity == purity } ?: GemPageEntry(GemKey(group.id, purity), 0, false)
         }
     }
 
@@ -174,16 +201,17 @@ private class GemCasePanel(
         val rows = purityRows()
         purityOffset = purityOffset.coerceIn(0, maxOf(0, rows.size - VISIBLE_ROWS))
         rows.drop(purityOffset).take(VISIBLE_ROWS).forEachIndexed { index, entry ->
-            val name =
-                if (entry.key.purity in
-                    dev.shadowsoffire.apotheosis.socket.gem.Purity.entries
-                        .map { it.serializedName }
+            val purity =
+                if (dev.shadowsoffire.apotheosis.socket.gem.Purity.entries.any {
+                        it.serializedName ==
+                            entry.key.purity
+                    }
                 ) {
                     Component.translatable("item.apotheosis.gem.${entry.key.purity}", Component.empty()).string.trim()
                 } else {
                     entry.key.purity
                 }
-            val text = "$name: ${entry.count}/32767"
+            val text = "$purity: ${entry.count}/32767"
             graphics.drawString(
                 font,
                 font.plainSubstrByWidth(text, PANEL_WIDTH - PADDING * 2),
@@ -214,16 +242,32 @@ private class GemCasePanel(
         mouseX: Double,
         mouseY: Double,
         button: Int,
+    ): Boolean =
+        when {
+            !visible || !isMouseOver(mouseX, mouseY) -> false
+            mouseY - y < VIEW_HEIGHT -> selectView(mouseX)
+            viewState.settings -> false
+            else -> handleStorageClick(mouseX, mouseY, button)
+        }
+
+    private fun selectView(mouseX: Double): Boolean {
+        viewState.settings = mouseX - x >= PANEL_WIDTH / 2
+        searchFocused = false
+        return true
+    }
+
+    private fun handleStorageClick(
+        mouseX: Double,
+        mouseY: Double,
+        button: Int,
     ): Boolean {
-        if (!visible || !isMouseOver(mouseX, mouseY)) return false
         val localY = mouseY - y
-        searchFocused = localY < LIST_Y
+        searchFocused = localY in SEARCH_Y.toDouble()..LIST_Y.toDouble()
         when {
             localY >= LIST_Y && localY < LIST_Y + VISIBLE_ROWS * ROW_HEIGHT -> {
                 filtered().getOrNull(listOffset + ((localY - LIST_Y) / ROW_HEIGHT).toInt())?.let {
                     selected = it.id
-                    purityOffset =
-                        0
+                    purityOffset = 0
                 }
             }
             localY >= PURITY_Y && localY < PURITY_Y + VISIBLE_ROWS * ROW_HEIGHT -> {
@@ -261,7 +305,7 @@ private class GemCasePanel(
         horizontal: Double,
         vertical: Double,
     ): Boolean {
-        val hovered = visible && isMouseOver(mouseX, mouseY)
+        val hovered = !viewState.settings && visible && isMouseOver(mouseX, mouseY)
         if (hovered) {
             val delta = if (vertical > 0) -1 else 1
             if (mouseY - y <
@@ -280,7 +324,8 @@ private class GemCasePanel(
         modifiers: Int,
     ): Boolean {
         val accepted =
-            visible &&
+            !viewState.settings &&
+                visible &&
                 searchFocused &&
                 !Character.isISOControl(character) &&
                 GemStorageCodec.validText(search + character)
@@ -293,9 +338,7 @@ private class GemCasePanel(
         scanCode: Int,
         modifiers: Int,
     ): Boolean {
-        // 検索中の文字キーを消費し、バッグを閉じるinventoryキーとの競合を防ぐ。
-        val accepted =
-            visible && searchFocused && key != org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE
+        val accepted = !viewState.settings && visible && searchFocused && key != org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE
         if (accepted &&
             key == org.lwjgl.glfw.GLFW.GLFW_KEY_BACKSPACE &&
             search.isNotEmpty()
@@ -305,27 +348,9 @@ private class GemCasePanel(
         return accepted
     }
 
-    override fun isFocused(): Boolean = searchFocused
+    override fun isFocused(): Boolean = !viewState.settings && searchFocused
 
     override fun setFocused(focused: Boolean) {
         searchFocused = focused
-    }
-
-    companion object {
-        private const val PANEL_WIDTH = 200
-        private const val PANEL_HEIGHT = 205
-        private const val PADDING = 4
-        private const val LIST_Y = 20
-        private const val PURITY_Y = 92
-        private const val ROW_HEIGHT = 12
-        private const val VISIBLE_ROWS = 6
-        private const val BUTTON_Y = 168
-        private const val BUTTON_HEIGHT = 16
-        private const val STATUS_Y = 190
-        private const val BACKGROUND = -14671840
-        private const val FOREGROUND = -1
-        private const val SELECTED = -256
-        private const val UNRESOLVED = -21846
-        private const val BUTTON_COLOR = -11184811
     }
 }

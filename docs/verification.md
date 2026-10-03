@@ -107,3 +107,48 @@ raw NBTは通常slotのネットワークcodecへ送らず、中身あり／ロ�
 未検収は[client-acceptance.md](client-acceptance.md)の画面の表示・日本語・検索／スクロール・実クリック、認証済み接続、実playerの装着バッグを使う再起動、pack共存、Windows。GUI操作用の自動入力環境は用意していない。GameTestによるmenu操作と起動成功から、これらを成功とは推定しない。
 
 通常JAR: `neoforge/build/libs/sophisticated_gem_case-0.1.0-dev.jar`。SHA256: `aff454e878925b35c4e1cfc5242aa85acb7cbef71039a3b7112a8203251f3bdd`。試遊用`.local/client-trial/mods`もこのJARへ更新した。外部JAR、cache、ワールド、ログはGitへ含めない。
+
+
+## 工程3: Pickup／Deposit／Restock連携と転送設定（2026-10-03〜04）
+
+[承認済み仕様](superpowers/specs/2026-10-03-gem-case-integration-design.md)に従い、処理用inventory wrapperによるPickup接続、native通常転送後の専用Deposit／Restock、二方向のON／OFFと種類・純度フィルタ、世代付き通信とタブ内設定画面を追加した。初期設定は両方向OFF／ALL。上位加工・材料枠・装着中の上位化・通常入手recipe・最終textureは後続工程。構成はMC 1.21.1／NeoForge 21.1.252／Java 21／Kotlin 2.0.21／KFF 5.5.0と固定依存manifestを維持する。
+
+### 保存・転送の契約
+
+個数schema 1は維持し、設定を独立した`gem_transfer_settings` componentのschema 1で保存する。設定不在はDEFAULT、未知形式や不正型はrawを保持して自動転送と設定上書きを止める。正常な個数の手動操作は維持する。設定詳細の通常ItemStack wireは実測1byteのlocked booleanで、全設定NBTを送らない。64 entry／32KiBの独立ページを使い、countsとsettingsのsession／revisionが揃うまでclientの編集を禁止する。
+
+公開IOの専用配分後は同バッグの内側processing wrapperの配分を抑止し、simulateでも容量を二重に使わない。専用転送の外部callback中はバッグUUID単位のexclusive文脈と短命permitで数量・設定の通常変更と取り外しを止め、別バッグの操作は許可する。finallyで文脈を解除する。native Restockのoriginal全体はrouting抑止下で実行し、OFF／除外でも通常Restockが専用へ入り込まない。専用判定はGem側フィルタだけ、通常判定はnative側フィルタだけを使う。
+
+専用転送は最大512成功stack／16,384 handler slot訪問で止まり、残りを元へ残す。Restockの候補走査は先頭8,192slotまでとし、残りの予算をsimulate／実extract／必要な復元に確保する。巨大handlerの後半slotを全走査する保証や走査cursorはない。Depositは予約減算後に実insertの余りを戻し、前のslotが部分受入した後に次のslotが無変更で例外を投げても、未受入分だけを復元する。Restockは実extract量だけを加える。契約に従うhandlerの部分受入／部分extract／EMPTY拒否では数量を保存する。外部handlerが変更後に例外を投げる、異なるstackを返す、復元を拒否する等の契約違反まで全体rollbackを保証せず、失敗を握り潰さない。
+
+### 固定loaderの起動修正
+
+KFF 5.5.0のloader範囲依存`[3,5)`からFML 4.0.45が選ばれ、NeoForge 21.1.252のbootstrap側4.0.44と`fml_loader` module名が衝突した。`dependencyInsight --dependency net.neoforged.fancymodloader:loader --configuration gametestRuntimeClasspath`の実測で確認し、version catalogのstrict 4.0.44とimplementation constraintで揃えた。[KFF 5.5.0のPOM](https://thedarkcolour.github.io/KotlinForForge/thedarkcolour/kfflang-neoforge/5.5.0/kfflang-neoforge-5.5.0.pom)、[NeoForge 21.1.252のPOM](https://maven.neoforged.net/releases/net/neoforged/neoforge/21.1.252/neoforge-21.1.252.pom)が固定版の根拠。sandbox外実行・新daemonでは解消せず、legacy classpathから4.0.44を単に除く案もbootstrap欠落で失敗したため採用していない。変更後にGameTestが実行された。loader本体はアドオンJARへ同梱しない。
+
+coreフィルタ、Pickup、専用転送、設定APIには実装前のREDを記録した。Task 1 loader保存側は実装先行で、先行REDは未実施。後から追加した境界テストは既存実装の検査として扱う。途中の66件実行では63件が成功し、3件のfixture／assertion誤りを修正して最終検証へ進んだ。
+
+
+### 最終実測（2026-10-04）
+
+ログは`.local/verification/integration/`、Java 21.0.12.1、`GRADLE_USER_HOME=$PWD/.local/gradle`、`JAVA_TOOL_OPTIONS=-XX:ActiveProcessorCount=2`を使用。
+
+| 検証 | コマンド／ログ | 観測結果 |
+| --- | --- | --- |
+| script | `node --test scripts/test/*.test.mjs`／script-tests.log | 29件成功 |
+| 翻訳生成 | `ktlintFormat :neoforge:classes :neoforge:runData`／combined-data-2.log | BUILD SUCCESSFUL。生成6ファイル中ja_jp／en_usだけ変更 |
+| 結合検証と通常JAR | `ktlintFormat check :neoforge:build :neoforge:verifyModJar :neoforge:runGameTestServer`／resume-acceptance-5.log | BUILD SUCCESSFUL、必須72件成功。ktlint／detekt／単体／core境界／buildSrc／JAR内容検査も成功 |
+| UUID境界追加後 | `ktlintFormat check :neoforge:runGameTestServer`／uuid-final.log | BUILD SUCCESSFUL、必須73件成功。`node scripts/check-gametest-result.mjs`も73件。本番は結合検証以後変更なし、実バッグUUID差替えの設定拒否テストだけ追加 |
+| datagen再実行 | `:neoforge:runData`／datagen-repeat.log | BUILD SUCCESSFUL、written: 0。全6ファイルの一覧とSHA256比較で差分0。追跡／未追跡を確認、生成lang以外に差分なし |
+| 通常JAR専用server | `.local/integration-server`／ordinary-server.log | 通常JAR＋固定依存の10 JAR、JEI／Gateways／fixtureなし。127.0.0.1:25579、新規integration-verification world、Done (10.597s)、save-all flush／stop、exit 0 |
+| コピー再起動・保存 | integration-verification-restart／ordinary-server-restart.log | Done (3.593s)。保存したupgrade itemのcounts `missing:retained`×`future`の7個、Deposit ON／INCLUDEの同ID・純度、Restock OFF／ALLをdata getで確認。stop、exit 0。元worldは上書きしない |
+| 開発client | `:neoforge:runClient`／client-startup.log | WSLg環境。JEI 19.51.0.418をMod Listで検出し、resourceとJEI GUI atlas生成へ到達。確認後中断（Gradle正常終了として扱わない）。表示／クリック／認証接続は未実施 |
+
+初回serverのsummon直後にまとめて送ったdata getは`No entity was found`で、当時の照会は保存確認に使わない。コピー再起動後、読み込み完了してから単独で送ったdata getにより両componentを観測した。これはupgrade item entityの保存往復であり、実playerが装着したバッグの手動再起動検収を代替しない。外部MODの任意連携先クラス欠落のWARNとclient音声関連ログは残り、今回のGUI検収成功とは扱わない。
+
+通常JARへcoreフィルタ、設定codec、processing handler、専用転送、bridge、三つの新Mixin、設定request／client widget、必要langを含める検査を追加した。外部MOD本体、GameTest fixture、skills、docsは同梱しない。SHA256は`de388e36fea05439b05d6fb5e56ca19e34acb41489bde2d24cc00f4e10624456`。試遊用`.local/client-trial/mods`も更新した。依存JARの一覧とhashは`ordinary-mods.json`へ保存し、固定manifestと照合した。
+
+### 独立レビューと未検収
+
+実装担当とは別の`gpt-6-luna`（high、会話履歴なし）が、45aec1cからの全実装diffと新規未追跡コード、承認spec／計画／規約／固定作者sourceを読んだ。数量保存・再入とpermit・例外解除・通常Restock迂回・raw同期・menu権限／世代・wire予算を確認し、Critical／Important／Minorの指摘なし。CodeRabbit CLIの0件は新規未追跡ファイルがサービス側の対象外だったため、それらをすべて独立担当が手読みに含めた。最後の実バッグUUIDテストと73件成功も追認。結果は`.local/verification/integration/review.md`。
+
+未検収は[client-acceptance.md](client-acceptance.md)のGUI実操作、日本語表示・種類検索・スクロール・連携を実playerで操作すること、認証済み接続、装着バッグの手動再起動、pack共存、Windows。GameTestと起動確認からこれらの成功を推定しない。

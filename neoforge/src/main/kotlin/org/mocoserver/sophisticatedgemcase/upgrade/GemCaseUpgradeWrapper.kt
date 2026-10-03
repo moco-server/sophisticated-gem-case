@@ -9,6 +9,8 @@ import net.p3pp3rf1y.sophisticatedcore.upgrades.UpgradeWrapperBase
 import org.mocoserver.sophisticatedgemcase.ModDataComponents
 import org.mocoserver.sophisticatedgemcase.core.GemCounts
 import org.mocoserver.sophisticatedgemcase.core.GemTransferSettings
+import org.mocoserver.sophisticatedgemcase.integration.GemOperationContext
+import org.mocoserver.sophisticatedgemcase.integration.GemTransferPermit
 import org.mocoserver.sophisticatedgemcase.storage.GemProcessingHandler
 import org.mocoserver.sophisticatedgemcase.storage.GemSettingsCodec
 import org.mocoserver.sophisticatedgemcase.storage.GemSettingsState
@@ -45,7 +47,10 @@ internal class GemCaseUpgradeWrapper(
         expected: GemTransferSettings,
         updated: GemTransferSettings,
     ): Boolean =
-        if (Thread.currentThread().threadGroup == SidedThreadGroups.SERVER) {
+        if (Thread.currentThread().threadGroup == SidedThreadGroups.SERVER &&
+            GemOperationContext.mayMutate(storageWrapper, null) &&
+            GemCaseUpgradeItem.find(storageWrapper) === this
+        ) {
             val current = settingsSnapshot() as? GemSettingsState.Ready
             if (current?.settings == expected && GemSettingsCodec.canWrite(updated)) {
                 upgrade.set(ModDataComponents.gemTransferSettings.get(), GemSettingsCodec.write(updated))
@@ -77,8 +82,9 @@ internal class GemCaseUpgradeWrapper(
     fun replace(
         expected: GemCounts,
         updated: GemCounts,
+        permit: GemTransferPermit? = null,
     ): Boolean {
-        if (Thread.currentThread().threadGroup != SidedThreadGroups.SERVER) return false
+        if (Thread.currentThread().threadGroup != SidedThreadGroups.SERVER || !mayMutate(permit)) return false
         val current = snapshot() as? GemStorageState.Ready
         return if (current?.counts == expected && GemStorageCodec.canWrite(updated)) {
             upgrade.set(ModDataComponents.gemStorage.get(), GemStorageCodec.write(updated))
@@ -90,14 +96,21 @@ internal class GemCaseUpgradeWrapper(
     }
 
     fun hasContentsOrLocked(): Boolean =
-        when (val state = snapshot()) {
-            is GemStorageState.Ready -> state.counts.entries().isNotEmpty()
-            is GemStorageState.ClientSummary ->
-                state.hasContents ||
-                    state.locked ||
-                    Thread.currentThread().threadGroup == SidedThreadGroups.SERVER
-            is GemStorageState.Locked -> true
+        if (GemOperationContext.isExclusive(storageWrapper)) {
+            true
+        } else {
+            when (val state = snapshot()) {
+                is GemStorageState.Ready -> state.counts.entries().isNotEmpty()
+                is GemStorageState.ClientSummary ->
+                    state.hasContents ||
+                        state.locked ||
+                        Thread.currentThread().threadGroup == SidedThreadGroups.SERVER
+                is GemStorageState.Locked -> true
+            }
         }
+
+    fun mayMutate(permit: GemTransferPermit?): Boolean =
+        GemOperationContext.mayMutate(storageWrapper, permit) && GemCaseUpgradeItem.find(storageWrapper) === this
 
     override fun canBeDisabled(): Boolean = false
 }

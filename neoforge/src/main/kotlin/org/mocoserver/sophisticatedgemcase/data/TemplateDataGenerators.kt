@@ -58,31 +58,43 @@ private class TemplateLanguage(
     private val itemName: String,
 ) : LanguageProvider(output, ModTemplate.ID, locale) {
     override fun addTranslations() {
+        val japanese = itemName == "サンプルトークン"
+        addGuiTranslations(japanese)
+        addItemTranslations(japanese)
+    }
+
+    private fun addGuiTranslations(japanese: Boolean) {
         val labels =
             mapOf(
                 "title" to ("Gem Case" to "Gem Case"),
+                "storage" to ("収納" to "Storage"),
+                "settings" to ("転送設定" to "Transfer settings"),
                 "search" to ("検索: " to "Search: "),
                 "insert" to ("カーソル投入" to "Insert cursor"),
                 "move" to ("一括移動" to "Move from bag"),
                 "loading" to ("一覧を同期しています" to "Synchronizing list"),
                 "locked" to ("保存を保持して操作停止" to "Storage locked; data retained"),
                 "help" to ("左:1 右:stack Shift:取出" to "Left:1 Right:stack Shift:inventory"),
+                "deposit" to ("Deposit" to "Deposit"),
+                "deposit_selected" to ("▶ Deposit" to "▶ Deposit"),
+                "restock" to ("Restock" to "Restock"),
+                "restock_selected" to ("▶ Restock" to "▶ Restock"),
+                "enabled" to ("対象: ON" to "Enabled"),
+                "disabled" to ("対象: OFF" to "Disabled"),
+                "mode_all" to ("方式: すべて" to "Mode: all"),
+                "mode_include" to ("方式: 指定" to "Mode: include"),
+                "mode_exclude" to ("方式: 除外" to "Mode: exclude"),
+                "gem_ids" to ("種類" to "Gem types"),
+                "purities" to ("純度" to "Purities"),
+                "settings_help" to ("一覧を選択して条件を変更" to "Select entries to change the filter"),
             )
         labels.forEach { (key, names) ->
-            add(
-                "sophisticated_gem_case.gui.$key",
-                if (itemName ==
-                    "サンプルトークン"
-                ) {
-                    names.first
-                } else {
-                    names.second
-                },
-            )
+            add("sophisticated_gem_case.gui.$key", if (japanese) names.first else names.second)
         }
-        add(ModItems.sampleToken.get(), itemName)
-        val japanese = itemName == "サンプルトークン"
-        add(ModItems.gemCaseUpgrade.get(), if (japanese) "Gem Caseアップグレード" else "Gem Case Upgrade")
+        addTransferErrorTranslations(japanese)
+    }
+
+    private fun addTransferErrorTranslations(japanese: Boolean) {
         add(
             "sophisticated_gem_case.error.duplicate",
             if (japanese) "専用アップグレードは一個までです" else "Only one Gem Case upgrade is allowed",
@@ -103,5 +115,10 @@ private class TemplateLanguage(
             "sophisticated_gem_case.error.backpack_only",
             if (japanese) "バッグ専用です" else "This upgrade requires a backpack",
         )
+    }
+
+    private fun addItemTranslations(japanese: Boolean) {
+        add(ModItems.sampleToken.get(), itemName)
+        add(ModItems.gemCaseUpgrade.get(), if (japanese) "Gem Caseアップグレード" else "Gem Case Upgrade")
     }
 }

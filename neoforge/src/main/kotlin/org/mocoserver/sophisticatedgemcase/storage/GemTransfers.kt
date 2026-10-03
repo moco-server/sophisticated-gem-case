@@ -2,6 +2,8 @@ package org.mocoserver.sophisticatedgemcase.storage
 
 import net.minecraft.world.item.ItemStack
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper
+import org.mocoserver.sophisticatedgemcase.integration.GemOperationContext
+import org.mocoserver.sophisticatedgemcase.integration.GemTransferPermit
 import org.mocoserver.sophisticatedgemcase.upgrade.GemCaseUpgradeItem
 import org.mocoserver.sophisticatedgemcase.upgrade.GemCaseUpgradeWrapper
 
@@ -12,7 +14,9 @@ internal object GemTransfers {
         stack: ItemStack,
         limit: Int,
         simulate: Boolean,
+        permit: GemTransferPermit? = null,
     ): ItemStack {
+        if (!wrapper.mayMutate(permit)) return stack
         val key = StandardGem.keyOf(stack)
         val state = wrapper.snapshot() as? GemStorageState.Ready
         return if (key != null && state != null && limit > 0) {
@@ -29,7 +33,11 @@ internal object GemTransfers {
     }
 
     fun moveFromNormal(storage: IStorageWrapper): Int {
-        if (Thread.currentThread().threadGroup != net.neoforged.fml.util.thread.SidedThreadGroups.SERVER) return 0
+        if (Thread.currentThread().threadGroup != net.neoforged.fml.util.thread.SidedThreadGroups.SERVER ||
+            !GemOperationContext.mayMutate(storage, null)
+        ) {
+            return 0
+        }
         val wrapper = GemCaseUpgradeItem.find(storage)
         val before = wrapper?.snapshot() as? GemStorageState.Ready
         return if (wrapper != null && before != null) move(storage, wrapper, before) else 0

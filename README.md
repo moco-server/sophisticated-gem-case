@@ -2,7 +2,7 @@
 
 ApotheosisのGem CaseをSophisticated Backpacksへ組み込むKotlinアドオン。Minecraft 1.21.1／NeoForge 21.1.252／Java 21向けに開発する。作者: samunohito、ソースライセンス: MIT。
 
-[Issue #1](https://github.com/moco-server/sophisticated-gem-case/issues/1)に基づき開発中。Gem Case下位アップグレードとGem専用収納を実装し、創造モードから入手して画面上で操作する工程2までを対象とする。Pickup／Deposit／Restock連携、上位版の加工・材料枠は未実装で、完成済み機能として扱わない。通常JARとクライアントでの検収状況は[検証記録](docs/verification.md)を参照する。
+[Issue #1](https://github.com/moco-server/sophisticated-gem-case/issues/1)に基づき開発中。Gem Case下位アップグレードとGem専用収納を実装し、創造モードから入手して操作する下位収納と、Pickup／Deposit／Restock連携・転送設定を実装した。専用Deposit／Restockは初期OFFで、対応する既存アップグレードとの併用が必要。上位版の加工・材料枠は未実装。通常JARとクライアントでの検収状況は[検証記録](docs/verification.md)を参照する。
 
 ## 開発と検証
 

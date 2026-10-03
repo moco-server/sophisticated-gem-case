@@ -4,7 +4,7 @@
 
 [Issue #1](https://github.com/moco-server/sophisticated-gem-case/issues/1)を仕様の起点とし、ApotheosisのGem専用収納・管理・純度強化をSophisticated Backpacksへ組み込む。目標は探索中の回収から種類／純度別の整理、拠点との転送、携帯加工をつなぐこと。
 
-このrepoで独立して保守する。Kotlin主体とし、MixinなどJavaとの接続に必要な箇所のみJavaを許容する。下位Gem Caseアップグレード、専用保存、画面操作を実装した。Pickup／Deposit／Restock連携と上位加工は未実装であり、工程2の自動検証・起動検証は実施済みで、GUIの実操作は未検収。
+このrepoで独立して保守する。Kotlin主体とし、MixinなどJavaとの接続に必要な箇所のみJavaを許容する。下位Gem Caseアップグレード、専用保存、画面操作を実装した。Pickup／Deposit／Restock連携と専用の転送設定・フィルタも実装した。上位加工は未実装で、GUIの実操作は未検収。
 
 MOD IDは`sophisticated_gem_case`、表示名は`Sophisticated Gem Case`、packageは`org.mocoserver.sophisticatedgemcase`、Maven groupは`org.mocoserver`、作者は`samunohito`。ライセンスはMITを維持する。
 
@@ -28,11 +28,13 @@ MOD IDは`sophisticated_gem_case`、表示名は`Sophisticated Gem Case`、packa
 
 この区切りの入手方法は創造モードと管理コマンドで、recipeはなく、item見た目は仮素材。sample_tokenは基盤検証用として保持する。ここまでの記述は設計上の範囲であり、各項目の動作確認状況は[検証記録](verification.md)に従う。
 
-後続工程3ではPickup／Deposit／Restockとの連携と専用設定・フィルタを実装する。工程4では上位版、6個の専用材料枠、加工、材料補充、装着中の上位化を実装する。これらは現在の実装・検収範囲に含めない。
+工程3ではPickupの処理用inventoryへ専用優先の投入を接続し、Deposit／Restockの固定メソッドに専用転送を追加した。専用の二方向は初期OFFで、種類と純度のAND条件を持つ不変フィルタを別componentへ保存する。設定の破損時は原文を保持し、自動転送・設定上書きを止め、正常な個数の手動操作は維持する。通常収納の既存転送にはnativeフィルタを使い、専用転送にはGem側フィルタだけを使う。設定画面は既存タブ内へ置き、個数と設定の同じsession／revisionの同期完了後に編集を許可する。
+
+工程4の上位版、6個の専用材料枠、加工、材料補充、装着中の上位化は未実装。
 
 ## 依存境界と接続方針
 
-coreはpure Kotlin/JVMとし、ID文字列・個数・条件・計算などゲームから独立する判断だけを置く。Minecraft、NeoForge、KFF、Apotheosis、Sophisticated系、関連MODの型は内部にも公開APIにも入れない。現在はGemの種類／純度キーと上限付き不変個数モデルを持つ。ゲーム依存の保存変換や外部操作の抽象APIはcoreへ置かない。
+coreはpure Kotlin/JVMとし、ID文字列・個数・条件・計算などゲームから独立する判断だけを置く。Minecraft、NeoForge、KFF、Apotheosis、Sophisticated系、関連MODの型は内部にも公開APIにも入れない。現在はGemの種類／純度キー、上限付き不変個数モデル、転送フィルタと設定を持つ。ゲーム依存の保存変換や外部操作の抽象APIはcoreへ置かない。
 
 neoforgeはGemの識別とItemStack変換、登録、保存変換、実インベントリ操作、通信、画面、datagenを担当する。client専用コードはclient packageへ隔離する。公開APIを優先し、必要性を確認できた箇所だけ最小のMixinを採用する。連携MOD本体は通常JARへ同梱しない。
 
@@ -48,6 +50,6 @@ neoforgeはGemの識別とItemStack変換、登録、保存変換、実インベ
 
 最初の区切りの[実装計画](superpowers/plans/2026-10-02-gem-case-foundation.md)と[検証記録](verification.md)を参照する。依存版の正はcatalog／Gradle properties、公開JARの取得記録は[対応構成](compatibility.md)とする。
 
-工程2の[下位版設計](superpowers/specs/2026-10-02-gem-case-storage-design.md)と[実装計画](superpowers/plans/2026-10-02-gem-case-storage.md)は承認済み。追加component付きGemは通常収納に残す。保存形式、未解決ID、画面操作、暫定入手方法は同仕様を参照する。後続では工程3の専用転送設定・フィルタ、工程4の加工材料とrecipe、最終見た目を設計する。packへの採用は合意済みだが、今回packを変更・導入しない。
+工程2の[下位版設計](superpowers/specs/2026-10-02-gem-case-storage-design.md)と[実装計画](superpowers/plans/2026-10-02-gem-case-storage.md)は承認済み。追加component付きGemは通常収納に残す。保存形式、未解決ID、画面操作、暫定入手方法は同仕様を参照する。後続では工程4の加工材料とrecipe、最終見た目を設計する。packへの採用は合意済みだが、今回packを変更・導入しない。
 
-工程3の[連携設計](superpowers/specs/2026-10-03-gem-case-integration-design.md)は2026-10-03に承認済み。[実装計画](superpowers/plans/2026-10-03-gem-case-integration.md)を作成し、保存・回収・専用転送・設定画面・検収の5単位で進める。本番の連携コードはまだ変更していない。
+工程3の[連携設計](superpowers/specs/2026-10-03-gem-case-integration-design.md)は2026-10-03に承認済み。[実装計画](superpowers/plans/2026-10-03-gem-case-integration.md)を作成し、保存・回収・専用転送・設定画面・検収の5単位で進める。実装と検証の記録は同計画と[検証記録](verification.md)へ残す。

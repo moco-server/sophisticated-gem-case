@@ -20,6 +20,8 @@ internal class GemInputOutputHandler(
     ): ItemStack =
         if (!simulate && Thread.currentThread().threadGroup != SidedThreadGroups.SERVER) {
             stack
+        } else if (GemOperationContext.isExclusive(storage)) {
+            stack
         } else if (GemOperationContext.routingSuppressed(storage)) {
             original.insertItem(slot, stack, simulate)
         } else {
@@ -48,6 +50,8 @@ internal class GemInputOutputHandler(
     ): ItemStack =
         if (!simulate && Thread.currentThread().threadGroup != SidedThreadGroups.SERVER) {
             stack
+        } else if (GemOperationContext.isExclusive(storage)) {
+            stack
         } else if (GemOperationContext.routingSuppressed(storage)) {
             original.insertItem(stack, simulate)
         } else {
@@ -71,7 +75,11 @@ internal class GemInputOutputHandler(
         }
 
     override fun isInsertBlocked(): Boolean {
-        if (GemOperationContext.routingSuppressed(storage)) return original.isInsertBlocked
+        if (GemOperationContext.isExclusive(storage) ||
+            GemOperationContext.routingSuppressed(storage)
+        ) {
+            return original.isInsertBlocked
+        }
         val wrapper = GemCaseUpgradeItem.find(storage)?.takeIf { it.settingsSnapshot() is GemSettingsState.Ready }
         val state = wrapper?.snapshot() as? GemStorageState.Ready
         val hasSpace =

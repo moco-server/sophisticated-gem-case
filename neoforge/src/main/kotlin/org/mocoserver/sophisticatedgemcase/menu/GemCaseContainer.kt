@@ -25,7 +25,10 @@ internal class GemCaseContainer(
         val stack = menu.storageWrapper.upgradeHandler.getStackInSlot(upgradeContainerId)
         val current =
             session?.takeIf { it.matchesStorage(storageId, stack) }
-                ?: GemMenuSession(storageId, stack, upgradeWrapper.snapshot()).also { session = it }
+                ?: GemMenuSession(storageId, stack, upgradeWrapper.snapshot(), upgradeWrapper.settingsSnapshot()).also {
+                    session =
+                        it
+                }
         current.refresh(upgradeWrapper)
         return current
     }
