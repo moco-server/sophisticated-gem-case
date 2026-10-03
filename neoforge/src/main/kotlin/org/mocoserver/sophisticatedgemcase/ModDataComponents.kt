@@ -8,6 +8,8 @@ import net.minecraft.network.codec.StreamCodec
 import net.minecraft.world.item.component.CustomData
 import net.neoforged.neoforge.registries.DeferredHolder
 import net.neoforged.neoforge.registries.DeferredRegister
+import org.mocoserver.sophisticatedgemcase.storage.GemSettingsCodec
+import org.mocoserver.sophisticatedgemcase.storage.GemSettingsState
 import org.mocoserver.sophisticatedgemcase.storage.GemStorageCodec
 import org.mocoserver.sophisticatedgemcase.storage.GemStorageState
 
@@ -21,6 +23,29 @@ internal object ModDataComponents {
     val gemStorage: DeferredHolder<DataComponentType<*>, DataComponentType<CustomData>> =
         registry.registerComponentType<CustomData>("gem_storage") { builder ->
             builder.persistent(CustomData.CODEC).networkSynchronized(summaryCodec)
+        }
+    val gemTransferSettings: DeferredHolder<DataComponentType<*>, DataComponentType<CustomData>> =
+        registry.registerComponentType<CustomData>("gem_transfer_settings") { builder ->
+            builder.persistent(CustomData.CODEC).networkSynchronized(settingsSummaryCodec)
+        }
+
+    private val settingsSummaryCodec =
+        object : StreamCodec<RegistryFriendlyByteBuf, CustomData> {
+            override fun encode(
+                buffer: RegistryFriendlyByteBuf,
+                value: CustomData,
+            ) {
+                val state = GemSettingsCodec.read(value)
+                buffer.writeBoolean(state !is GemSettingsState.Ready)
+            }
+
+            override fun decode(buffer: RegistryFriendlyByteBuf): CustomData =
+                CustomData.of(
+                    CompoundTag().apply {
+                        putBoolean("client_summary", true)
+                        putBoolean("locked", buffer.readBoolean())
+                    },
+                )
         }
     private val summaryCodec =
         object : StreamCodec<RegistryFriendlyByteBuf, CustomData> {

@@ -15,6 +15,11 @@ repositories {
     }
 }
 dependencies {
+    constraints {
+        implementation(libs.fml.loader) {
+            because("KFFのloader範囲依存をNeoForge 21.1.252の4.0.44へ揃え、JPMSの同名module衝突を防ぐ")
+        }
+    }
     implementation(project(":core"))
     implementation(libs.kff)
     implementation(libs.apotheosis)
@@ -176,7 +181,10 @@ val verifyModJar =
                 "$path/core/QuantityRulesKt.class",
                 "$path/ModItems.class",
                 "$path/core/GemCounts.class",
+                "$path/core/GemFilter.class",
                 "$path/storage/GemStorageCodec.class",
+                "$path/storage/GemSettingsCodec.class",
+                "$path/storage/GemProcessingHandler.class",
                 "$path/menu/GemCaseContainer.class",
                 "$path/mixin/BackpackWrapperMixin.class",
                 "sophisticated_gem_case.mixins.json",

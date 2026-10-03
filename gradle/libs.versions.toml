@@ -2,6 +2,8 @@
 kotlin = "2.0.21"
 moddev = "2.0.148"
 kff = "5.5.0"
+# KFFの範囲指定がNeoForge固定のloaderと異なる同名JPMS moduleを選ばないようにする。
+fml = { strictly = "4.0.44" }
 detekt = "1.23.8"
 ktlint-plugin = "12.1.2"
 ktlint = "1.5.0"
@@ -20,6 +22,7 @@ jei = "ufHUqt9b"
 gateways = "1.21.1-5.1.0"
 [libraries]
 kff = { module = "thedarkcolour:kotlinforforge-neoforge", version.ref = "kff" }
+fml-loader = { module = "net.neoforged.fancymodloader:loader", version.ref = "fml" }
 junit-bom = { module = "org.junit:junit-bom", version.ref = "junit" }
 apotheosis = { module = "maven.modrinth:apotheosis", version.ref = "apotheosis" }
 sophisticated-backpacks = { module = "maven.modrinth:sophisticated-backpacks", version.ref = "sophisticated-backpacks" }

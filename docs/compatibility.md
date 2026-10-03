@@ -38,6 +38,8 @@ ModDevGradle 2.0.148のadditionalRuntimeClasspathConfigurationはlegacy classpat
 
 ## Kotlinと再現性
 
+開発runtimeのFML loaderもNeoForge 21.1.252が使用する4.0.44へstrict constraintで固定する。KFF 5.5.0の[kfflang POM](https://thedarkcolour.github.io/KotlinForForge/thedarkcolour/kfflang-neoforge/5.5.0/kfflang-neoforge-5.5.0.pom)と[kffmod POM](https://thedarkcolour.github.io/KotlinForForge/thedarkcolour/kffmod-neoforge/5.5.0/kffmod-neoforge-5.5.0.pom)はloaderを`[3,5)`で要求する。範囲指定から別版が選ばれると、NeoForgeのloaderと同名JPMS moduleが重複する。通常配布JARへloaderを同梱する設定ではない。
+
 KFFのMaven開発用aggregateは配布用JARと異なる。専用サーバーと試遊clientでは作者配布の`kotlinforforge-5.5.0-all.jar`を使う。配布実行時stdlibは2.0.10、開発compilerは2.0.21であり、通常JARの起動を別に確認する。coreはKFFに依存しない。
 
 Wrapperのchecksumと既存のcore／buildSrc lockfileを維持する。NeoForge側の内部生成artifactを含めた全依存のchecksum verificationは未導入。coreは連携MOD・関連MODの禁止prefixを追加し、本番classpathとbytecodeを検査する。
