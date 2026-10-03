@@ -49,7 +49,7 @@ Task 1 → Task 2 → Task 3 → Task 4 → Task 5 → Task 6を基本とする�
 
 public `GemPurityPlanner.plan(counts: GemCounts, input: GemKey, output: GemKey, allocation: GemMaterialAllocation): GemPurityPlan?`。planは `counts: GemCounts`／`materials: GemMaterialAllocation` を公開する。既知6純度の隣接と同種類を確認し、入力2・出力1の容量条件を満たす新しいcountsだけ返す。
 
-- [ ] `protectsRightAndUsesNormalLeftOnlyMaterial` を先に追加する。slot0はcount1で左右適合、slot6はcount1でleftだけ、要求各1ならusesは `{0:1,6:1}`。不足ならnull、専用優先、共有slotの合計は元count以下、Int.MAX_VALUE合計でoverflowなし、入力list／返却mapの所有権もassertする。
+- [x] `protectsRightAndUsesNormalLeftOnlyMaterial` を先に追加する。slot0はcount1で左右適合、slot6はcount1でleftだけ、要求各1ならusesは `{0:1,6:1}`。不足ならnull、専用優先、共有slotの合計は元count以下、Int.MAX_VALUE合計でoverflowなし、入力list／返却mapの所有権もassertする。
 
 ```kotlin
 val allocation = requireNotNull(GemMaterialAllocator.allocate(
@@ -62,10 +62,10 @@ assertEquals(mapOf(6 to 1), allocation.leftUses)
 assertEquals(mapOf(0 to 1), allocation.rightUses)
 ```
 
-- [ ] `:core:test` を実行し、新API未定義のREDを記録する。
-- [ ] allocatorを実装する。right適合の総残数を計算し、共有候補をleftへ割り当てる量をright必要数を残せる範囲へ制限してleftを順に配分する。その後rightを残数から順に配分し、両方成立した場合だけ不変usesを返す。
-- [ ] `plansTwoInputsAndOneOutputWithoutChangingOriginal` を追加する。input3→1、output0→1、input1／output32,767→null、同一キー／非隣接／未知純度→nullを検査し、plannerを実装する。
-- [ ] `:core:test :core:check` が成功しcore境界を通った後、この単位をコミットする。
+- [x] `:core:test` を実行し、新API未定義のREDを記録する。
+- [x] allocatorを実装する。right適合の総残数を計算し、共有候補をleftへ割り当てる量をright必要数を残せる範囲へ制限してleftを順に配分する。その後rightを残数から順に配分し、両方成立した場合だけ不変usesを返す。
+- [x] `plansTwoInputsAndOneOutputWithoutChangingOriginal` を追加する。input3→1、output0→1、input1／output32,767→null、同一キー／非隣接／未知純度→nullを検査し、plannerを実装する。
+- [x] `:core:test :core:check` が成功しcore境界を通った後、この単位をコミットする。
 
 ## Task 2: 上位登録・共有wrapper・6材料枠の保存
 
