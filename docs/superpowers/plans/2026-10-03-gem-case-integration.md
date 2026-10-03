@@ -101,7 +101,7 @@ loader側はinternal sealed `GemSettingsState.Ready(settings: GemTransferSetting
 - [x] `.local/integration-server`の新規worldへ通常JAR＋固定依存だけを用意して専用server起動・保存・停止を確認する。保存worldはコピーから再起動し、countsと設定の保持を調べる。JEI限定導入のclientも起動する。画面実操作／認証接続を実施できない場合は未検収に分け、GameTestをその代わりとしない。
 - [x] 版・コマンド・ログ・件数・hash・実施／未実施・外部handler契約の限界を検証記録へ残す。通常／専用に同じGem、filter逆条件、ON／OFF、満杯、次操作の回復をclient-acceptanceへ追加する。
 - [x] 履歴なしの独立した安価なreviewerへ最終diff、spec、本計画、固定source、実測ログを渡す。数量保存、再入／文脈解除、通常Restock迂回、settings raw同期、権限と世代を重点確認する。Importantを根拠確認後に修正し、影響する検証を再実行する。
-- [ ] 記録をコミットし、ユーザーの既存指示に従いローカルmainへ統合する。新しい工程へ進む前にtreeと作業木を確認する。push／pack導入はこの計画に含めない。
+- [x] 記録をコミットし、ユーザーの既存指示に従いローカルmainへ統合する。新しい工程へ進む前にtreeと作業木を確認する。push／pack導入はこの計画に含めない。
 
 ## 固定APIと実行条件
 
@@ -113,7 +113,7 @@ Java 21は`/home/osamu/develop/moco-server/server-pack/.local/issue7-gradle/jdks
 
 ## 自己確認と実行状態
 
-フィルタ／保存はTask 1、回収／二重simulateはTask 2、外部転送／再入／仕事量はTask 3、設定要求／一覧／client編集はTask 4、配布・保存コピー・記録・独立レビューはTask 5で検証する。後続taskの型と署名はInterfacesに定義したものを使う。全spec項目とReview Focusの5条件をtaskへ対応させ、Task 3のnativeUpgrade identity照合とTask 2の無効Pickup列挙も固定APIに合わせた。Task 1／2を3361f7bへコミット済み。Task 3／4の実装を検収し、通常JAR／保存コピー／client起動と独立レビューまで完了。ローカルmain統合を行う。
+フィルタ／保存はTask 1、回収／二重simulateはTask 2、外部転送／再入／仕事量はTask 3、設定要求／一覧／client編集はTask 4、配布・保存コピー・記録・独立レビューはTask 5で検証する。後続taskの型と署名はInterfacesに定義したものを使う。全spec項目とReview Focusの5条件をtaskへ対応させ、Task 3のnativeUpgrade identity照合とTask 2の無効Pickup列挙も固定APIに合わせた。Task 1／2を3361f7bへコミット済み。Task 3／4の実装を検収し、通常JAR／保存コピー／client起動と独立レビューまで完了。2257de4をローカルmainへfast-forward統合済み。
 
 
 ## 実行記録（2026-10-03）
@@ -128,3 +128,5 @@ Java 21は`/home/osamu/develop/moco-server/server-pack/.local/issue7-gradle/jdks
 - 最大4,096entry×256byteの全設定ページをencode/decodeし、64entry／32KiB以下と集約完了を確認。不正enum、counts/settings同期途中・旧世代・重複、設定ロック、未知値解除、16要求/tickの上限と次tick回復、設定要求の閉鎖／距離／UUID／upgrade差替えの無変更を検査した。
 - datagen再実行は全6ファイルの一覧／SHA256差分0。通常JAR専用serverは新規worldと保存コピー再起動がexit 0、個数と転送設定の保持を観測。JEI clientはresource／GUI atlas生成までで中断。GUI実操作・認証接続・pack・Windowsは未検収。
 - 新規の履歴なし独立reviewerが全差分と新規コードを確認し指摘なし、73件成功も追認。検証ログ・成果物hash・外部handler契約・巨大handler走査制限はdocs/verification.mdへ記録。
+
+- 2257de4へTask 3／4と検収記録をコミットし、ローカルmainへfast-forward統合。mainと検収branchのcommit／tree一致、作業木cleanを確認した。push／pack変更は実施していない。統合後の追記は文書だけで、本番と検証済みtreeを変更しない。

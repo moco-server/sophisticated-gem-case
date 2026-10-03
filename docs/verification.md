@@ -152,3 +152,5 @@ coreフィルタ、Pickup、専用転送、設定APIには実装前のREDを記�
 実装担当とは別の`gpt-6-luna`（high、会話履歴なし）が、45aec1cからの全実装diffと新規未追跡コード、承認spec／計画／規約／固定作者sourceを読んだ。数量保存・再入とpermit・例外解除・通常Restock迂回・raw同期・menu権限／世代・wire予算を確認し、Critical／Important／Minorの指摘なし。CodeRabbit CLIの0件は新規未追跡ファイルがサービス側の対象外だったため、それらをすべて独立担当が手読みに含めた。最後の実バッグUUIDテストと73件成功も追認。結果は`.local/verification/integration/review.md`。
 
 未検収は[client-acceptance.md](client-acceptance.md)のGUI実操作、日本語表示・種類検索・スクロール・連携を実playerで操作すること、認証済み接続、装着バッグの手動再起動、pack共存、Windows。GameTestと起動確認からこれらの成功を推定しない。
+
+工程3の実装・記録は2257de4へコミットし、ローカルmainへfast-forward統合した。検収branchとmainのcommit／tree一致とclean作業木を確認し、同じ本番treeの広範囲検証は重複実行しない。push／packへの導入は行っていない。
