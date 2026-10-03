@@ -53,3 +53,5 @@ neoforgeはGemの識別とItemStack変換、登録、保存変換、実インベ
 工程2の[下位版設計](superpowers/specs/2026-10-02-gem-case-storage-design.md)と[実装計画](superpowers/plans/2026-10-02-gem-case-storage.md)は承認済み。追加component付きGemは通常収納に残す。保存形式、未解決ID、画面操作、暫定入手方法は同仕様を参照する。後続では工程4の加工材料とrecipe、最終見た目を設計する。packへの採用は合意済みだが、今回packを変更・導入しない。
 
 工程3の[連携設計](superpowers/specs/2026-10-03-gem-case-integration-design.md)は2026-10-03に承認済み。[実装計画](superpowers/plans/2026-10-03-gem-case-integration.md)を作成し、保存・回収・専用転送・設定画面・検収の5単位で進める。実装と検証の記録は同計画と[検証記録](verification.md)へ残す。
+
+工程4の[上位加工・材料枠・装着中上位化の設計案](superpowers/specs/2026-10-04-gem-case-processing-design.md)をレビュー用に作成した。作者の実行時recipeを使い、専用6材料枠を優先する。補充ON時のみ同バッグ通常収納から不足分を予約し、全事前検証後に確定する案である。工程4の本番実装は未開始。
