@@ -223,8 +223,10 @@ internal class GemCaseUpgradeWrapper(
         ) {
             val current = settingsSnapshot() as? GemSettingsState.Ready
             if (current?.settings == expected && GemSettingsCodec.canWrite(updated)) {
-                upgrade.set(ModDataComponents.gemTransferSettings.get(), GemSettingsCodec.write(updated))
-                save()
+                saveProcessingData(
+                    ModDataComponents.gemTransferSettings.get(),
+                    GemSettingsCodec.write(updated),
+                )
                 true
             } else {
                 false

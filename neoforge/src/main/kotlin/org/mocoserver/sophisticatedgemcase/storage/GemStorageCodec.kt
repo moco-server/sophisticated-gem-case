@@ -28,7 +28,13 @@ internal object GemStorageCodec {
     }
 
     private fun parse(tag: CompoundTag): GemStorageState {
-        if (tag.allKeys == setOf("client_summary", "has_contents", "locked") && tag.getBoolean("client_summary")) {
+        if (tag.allKeys == setOf("client_summary", "has_contents", "locked")) {
+            val fields = listOf("client_summary", "has_contents", "locked")
+            valid(
+                fields.all { tag.contains(it, Tag.TAG_BYTE.toInt()) && tag.getByte(it).toInt() in 0..1 },
+                "summary",
+            )
+            valid(tag.getByte("client_summary").toInt() == 1, "summary")
             return GemStorageState.ClientSummary(tag.getBoolean("has_contents"), tag.getBoolean("locked"))
         }
         valid(tag.allKeys == setOf("schema_version", "entries"), "schema")
