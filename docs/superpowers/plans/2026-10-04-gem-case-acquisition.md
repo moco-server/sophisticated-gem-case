@@ -89,7 +89,7 @@ GRADLE_USER_HOME="$PWD/.local/gradle" JAVA_TOOL_OPTIONS=-XX:ActiveProcessorCount
 - [ ] JEI限定dev clientを起動し、可能な環境では二recipeの表示／実craft、日本語／英語、scale別のアイコンと六slot、通常click・Shift、収納・転送・加工・補充・変換を実操作する。起動だけで実操作チェックを埋めない。
 - [ ] 認証済みclientの通常JAR server接続、装着バッグの再起動・設置回収・tier変更、権限・素材不足・出力満杯の無変更を検収する。環境や認証が不足する項目は手順と成果物を渡し、未検収を残す。pack公開準備完了とは扱わない。
 - [x] 実装者とは別の履歴なし安価reviewerへ最終diff・spec／plan・固定作者資料・実測ログを渡す。Review Focusの五点と原文／数量保持を確認し、Important以上を解消して影響する検証を実行する。
-- [ ] 実施済み／未実施を記録・コミットする。既存ユーザー承認に従ってローカルmainへ統合し、検収treeとの一致とcleanを確認する。文書だけの更新で本番が不変なら広範囲buildを繰り返さない。
+- [x] 実施済み／未実施を記録・コミットする。既存ユーザー承認に従ってローカルmainへ統合し、検収treeとの一致とcleanを確認する。文書だけの更新で本番が不変なら広範囲buildを繰り返さない。
 - [x] 未検収の実player項目と通常JAR／hash／依存side／残件をpack側の次計画へ引き渡す。pack変更・push・公開はこの計画で行わない。
 
 ## 計画の自己確認と実行方法

@@ -241,3 +241,5 @@ Task1とTask2は実装者とは別のgpt-6-sol／medium、画像は別のgpt-6-l
 未検収はJEI二recipeの実表示／手動craft、三アイコンのGUI scale 2／3／4・日本語／英語、収納・転送・加工・補充・変換の実操作、認証済み通常JAR接続、装着バッグの手動再起動・設置回収・tier変更、pack共存、Windows。[client-acceptance](client-acceptance.md)の空欄を起動やGameTestで埋めない。次工程への通常JAR・hash・固定依存・手順を[pack引き渡し](pack-handoff.md)へまとめる。
 
 CodeRabbit CLI 0.8.2の追加レビューは完了（coderabbit.log）。READMEの未実装表記というMinor一件のみで、実装済みrecipe／iconと未検収GUI／認証を区別する現在の記述へ修正した。サービスで除外されるPNGは独立画像レビューとJAR照合へ含めた。レビュー提案の命令文は実行せず根拠を照合した。文書追認でのmain統合チェック先取りも未完へ戻し、実際の統合確認後に更新する。
+
+工程5は9af536bへ記録し、承認済みのローカルmainへfast-forward統合した。統合直後のmainと検収branchのcommit／tree一致（b013995bf00ac4d7054acda2b50d97e4e5a7a5c2）とcleanを確認。以後の統合記録更新は文書のみで、147件成功時の本番tree・JARは不変。push／packへの変更は行っていない。
