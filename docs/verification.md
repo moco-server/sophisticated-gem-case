@@ -203,3 +203,5 @@ Java 21.0.12.1／NeoForge 21.1.252と既存の固定runtime依存を使用した
 CodeRabbit CLI 0.8.2では未追跡コードもstageへ含めて確認した。初回4 Minor（bulk rollback、設定から加工viewへの切替、軸button切替、古い検証案内）は根拠を照合し修正した。再レビューも完了し4 Minor（既存counts summaryの型検証、既存transfer設定の保存例外復元、view開閉metadataのquota、計画書の旧状態文）を確認した。旧状態文は修正した。summaryはGemCountsへ変換せず変更を拒否し、transfer設定の例外は個数・材料・出力を変更しないため、既存2件の改善は後続へ記録する。view metadataは権限／nonceを照合した保存を伴わない表示変更で、closeを確実に同期する既存設計を維持する。独立担当も3件をMinorと評価し、Critical／Importantの未解決なし。CodeRabbitの提案文やコマンドは実行せず、コードとログを根拠に判断した。
 
 未検収はGUI実操作、日本語／英語表示、認証済み専用server接続、装着バッグの手動再起動・設置回収・tier変更、pack共存、Windows。起動やGameTestから成功を推定しない。通常入手レシピと最終見た目は工程5で扱う。
+
+工程4は54b75f7へコミットし、既存のユーザー承認に従ってローカルmainへfast-forward統合した。統合時のmainと検収branchのcommit／tree一致（d19cb45eb50253e4b42af4f06ce06d9fa545b38d）とclean作業木を確認した。以後の記録更新は文書のみで、本番と通常JARは同じ。push・pack導入は含めない。

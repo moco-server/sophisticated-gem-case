@@ -157,6 +157,6 @@ specの登録と共有収納はTask 2、材料・補充保存はTask 2、recipe�
 
 ## 実行記録
 
-Task 1は9845ece、Task 2はc92b16d。Task 3〜5はmenu/session/wrapperとnative slotの結合依存が強いため、結合検証・独立レビュー後に一つの整合した実装としてコミットする。GradleとGitは統括者が専有し、部分コードがbuild不能な状態の中間コミットは作らない。Task 6の結果は[検証記録](../../verification.md)へ集約した。最終実装ログは`.local/verification/processing/final-acceptance-3.log`、独立レビューは同dirのfinal-independent-review.md。通常JAR SHA256は468a4996f9887a4da8297097c43cddd34a0ee4a28d7af8d3c6e0731553960920。
+Task 1は9845ece、Task 2はc92b16d。Task 3〜5はmenu/session/wrapperとnative slotの結合依存が強いため、結合検証・独立レビュー後に一つの整合した実装として54b75f7へコミットし、ローカルmainへfast-forward統合した。GradleとGitは統括者が専有し、部分コードがbuild不能な状態の中間コミットは作らない。Task 6の結果は[検証記録](../../verification.md)へ集約した。最終実装ログは`.local/verification/processing/final-acceptance-3.log`、独立レビューは同dirのfinal-independent-review.md。通常JAR SHA256は468a4996f9887a4da8297097c43cddd34a0ee4a28d7af8d3c6e0731553960920。
 
 レビューでrecipe予算の再走査、保存後epoch変更時のraw未存在復元、native upgradeタグ不足、まとめ回収による材料slot迂回、全通常移動先の復元、上位にも共有される一括移動の例外と再入を検査・修正した。既存の専用Deposit／RestockはGem側フィルタだけに従うため、nativeフィルタとの二重一致を期待したテストを承認仕様に合わせた。view開閉metadataのquota例外とpanelがnative材料clickを譲る処理を加えた。
