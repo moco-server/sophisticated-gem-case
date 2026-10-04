@@ -56,4 +56,4 @@ neoforgeはGemの識別とItemStack変換、登録、保存変換、実インベ
 
 工程4の[上位加工・材料枠・装着中上位化の設計案](superpowers/specs/2026-10-04-gem-case-processing-design.md)は2026-10-04に承認された。[実装計画](superpowers/plans/2026-10-04-gem-case-processing.md)へ、保存・数量配分・加工確定・変換・画面と検収を割り当てた。作者の実行時recipeを使い、専用6材料枠を優先する。補充ON時のみ同バッグ通常収納から不足分を予約し、全事前検証後に確定する。必須140 GameTest、root check、通常JAR内容検査、専用serverの起動・reload・コピーworld保存往復、JEI入りclient起動を確認した。GUI実操作と認証接続は未検収で、実測と限界は検証記録へ残す。
 
-工程5の[入手経路・見た目・手動検収の設計案](superpowers/specs/2026-10-04-gem-case-acquisition-design.md)を準備した。現時点では未承認。下位と変換itemの通常recipeを追加し、上位化は検証済み装着中変換を使う案を推奨する。通常craftでの上位化はcomponent継承の検証負担が増えるため併設しない案である。
+工程5の[入手経路・見た目・手動検収の設計案](superpowers/specs/2026-10-04-gem-case-acquisition-design.md)を準備した。2026-10-04に承認され、[実装計画](superpowers/plans/2026-10-04-gem-case-acquisition.md)を作成した。本番変更は計画確認後に行う。下位と変換itemの通常recipeを追加し、上位化は検証済み装着中変換を使う案を推奨する。通常craftでの上位化はcomponent継承の検証負担が増えるため併設しない案である。
