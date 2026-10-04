@@ -43,6 +43,7 @@ private class TemplateRecipes(
             .requires(Items.PAPER)
             .unlockedBy("has_iron_ingot", has(Items.IRON_INGOT))
             .save(output)
+        GemCaseRecipes.build(output)
     }
 }
 
@@ -51,15 +52,18 @@ private class TemplateModels(
     helper: ExistingFileHelper,
 ) : ItemModelProvider(output, ModTemplate.ID, helper) {
     override fun registerModels() {
-        withExistingParent("gem_case_upgrade", mcLoc("item/generated")).texture("layer0", mcLoc("item/emerald"))
+        withExistingParent(
+            "gem_case_upgrade",
+            mcLoc("item/generated"),
+        ).texture("layer0", modLoc("item/gem_case_upgrade"))
         withExistingParent(
             "advanced_gem_case_upgrade",
             mcLoc("item/generated"),
-        ).texture("layer0", mcLoc("item/diamond"))
+        ).texture("layer0", modLoc("item/advanced_gem_case_upgrade"))
         withExistingParent(
             "gem_case_upgrade_conversion",
             mcLoc("item/generated"),
-        ).texture("layer0", mcLoc("item/amethyst_shard"))
+        ).texture("layer0", modLoc("item/gem_case_upgrade_conversion"))
         withExistingParent("sample_token", mcLoc("item/generated")).texture("layer0", mcLoc("item/iron_nugget"))
     }
 }

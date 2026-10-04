@@ -85,3 +85,21 @@ GameTestでの加工・変換と、下記の実client操作を区別する。通
 - [ ] 補充OFF／ON、専用優先、同バッグだけから不足補充
 - [ ] 満杯／不足／Locked／同期途中の拒否とreload後の更新
 - [ ] 保存再起動、認証済みclient接続、pack共存、Windows
+
+## Gem Case工程5の試遊手順
+
+以下は実clientでの検収対象。画像原稿の目視・GameTest・起動だけではチェックしない。通常JARと固定依存、新規／コピーworldを使う。入手後の収納・転送・加工・変換は工程2〜4の手順も実施する。
+
+1. JEIで下位と変換itemのrecipeを確認し、通常craftする。下位は `GGG / DBD / DCD`（G=glass_blocks、D=Gem Dust、B=Upgrade Base、C=Chest）、変換は `GGG / BEB / BNU`（G=glass_blocks、B=Basalt、E=Gem Cutting Table、N=Ender Chest、U=Upgrade Base）。各一個の出力と空収納を確認する。
+2. clear／異色glassでcraftし、一素材不足や別素材では出力しないことを確認する。上位の通常craftは存在せず、中身入り下位は装着中変換で上位化する。
+3. 下位のケース、上位の工具付きケース、変換の強化部品を、日本語／英語とGUI scale 2／3／4で見比べる。JEI・inventory・装着slotで仮texture参照や欠落がないことを確認する。
+4. 通常JAR専用serverへ認証済みclientを接続し、装着バッグの四保存領域（Gem、転送設定、材料、補充設定）を再起動・設置回収・tier変更の前後で照合する。item entityのdata getだけで装着バッグの成功とはしない。
+
+- [ ] JEI二recipe表示、通常craft、各出力一個と初期空収納
+- [ ] 異色glass、不足／誤素材の拒否、装着中変換との区別
+- [ ] 三アイコン、日本語／英語、GUI scale 2／3／4、欠落なし
+- [ ] 収納・転送・加工・補充・変換の実操作、拒否時の無変更
+- [ ] 認証済み通常JAR接続、装着バッグ保存再起動・設置回収・tier変更
+- [ ] pack共存、Windows（別変更の検収）
+
+アイコンの自作原稿と再生成方法は[art/item-icons](../art/item-icons/README.md)。実施済みと未検収の区分、配布JARのhashは[検証記録](verification.md)へ記す。

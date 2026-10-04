@@ -1,6 +1,6 @@
 {
     "parent": "minecraft:item/generated",
     "textures": {
-        "layer0": "minecraft:item/diamond"
+        "layer0": "sophisticated_gem_case:item/advanced_gem_case_upgrade"
     }
 }

@@ -1,6 +1,6 @@
 {
     "parent": "minecraft:item/generated",
     "textures": {
-        "layer0": "minecraft:item/amethyst_shard"
+        "layer0": "sophisticated_gem_case:item/gem_case_upgrade_conversion"
     }
 }

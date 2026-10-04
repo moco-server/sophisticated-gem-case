@@ -1,0 +1,27 @@
+{
+    "type": "minecraft:crafting_shaped",
+    "category": "misc",
+    "key": {
+        "B": {
+            "item": "sophisticatedbackpacks:upgrade_base"
+        },
+        "C": {
+            "item": "minecraft:chest"
+        },
+        "D": {
+            "item": "apotheosis:gem_dust"
+        },
+        "G": {
+            "tag": "c:glass_blocks"
+        }
+    },
+    "pattern": [
+        "GGG",
+        "DBD",
+        "DCD"
+    ],
+    "result": {
+        "count": 1,
+        "id": "sophisticated_gem_case:gem_case_upgrade"
+    }
+}

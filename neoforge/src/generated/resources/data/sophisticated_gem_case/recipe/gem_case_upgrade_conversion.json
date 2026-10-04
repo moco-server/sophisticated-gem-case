@@ -1,0 +1,30 @@
+{
+    "type": "minecraft:crafting_shaped",
+    "category": "misc",
+    "key": {
+        "B": {
+            "item": "minecraft:basalt"
+        },
+        "E": {
+            "item": "apotheosis:gem_cutting_table"
+        },
+        "G": {
+            "tag": "c:glass_blocks"
+        },
+        "N": {
+            "item": "minecraft:ender_chest"
+        },
+        "U": {
+            "item": "sophisticatedbackpacks:upgrade_base"
+        }
+    },
+    "pattern": [
+        "GGG",
+        "BEB",
+        "BNU"
+    ],
+    "result": {
+        "count": 1,
+        "id": "sophisticated_gem_case:gem_case_upgrade_conversion"
+    }
+}
