@@ -1,5 +1,23 @@
 # クライアント検収
 
+## Windows Prism試遊（2026-10-04）
+
+WSLg経由の表示を避けるため、Windows版Prismへ専用の新規インスタンスを設置した。zinc試遊と同じMinecraft 1.21.1／NeoForge 21.1.252／LWJGL 3.3.3を使い、Prism付属Microsoft Java 21.0.7（64-bit）へ指定した。
+
+- 表示名: **Moco Gem Case Trial 0.1.0-dev**
+- ID: `moco-gem-case-trial-0.1.0-dev-client`
+- 配置先: `C:\Users\wwwdd\AppData\Roaming\PrismLauncher\instances\moco-gem-case-trial-0.1.0-dev-client`
+- 日本語、GUI scale 3、1280×800、メモリ512〜4096 MiB、ActiveProcessorCount=2。
+- 通常本体＋固定runtime依存9＋JEI 19.51.0.418の11 JAR。全hashをdependency-manifestと本体の検収hashへ照合した。Gateways／fixtureなし。
+- 本体SHA256: `fda04d1283cd6858c76b75fc30a9ba156b37c39f93c09fad664075cd7b711853`。
+
+新規インスタンスだけを作成し、既存zinc／他pack・保存world・グローバルPrism設定は変更していない。既存の認証情報、world、MOD設定はコピーしない。固定JavaPathは対象Windows環境で実在と版を確認した。このPC専用の試遊配置で、別PC向け配布packではない。
+
+2026-10-04 22:58 JST、Windows Prismからサーバー指定なしで起動した。native clientのlatest.logで本体とJEIの検出、NVIDIA GeForce RTX 4060 Ti／OpenGL 4.6.0 NVIDIA 617.14、音声、JEI GUI atlas生成を確認し、確認した起動ログのERROR／FATALは0件。ゲームはユーザー試遊用に起動したままにした。これは起動の検収であり、実craft／収納／加工／認証接続の成功ではない。
+
+試す際はシングルプレイで新規クリエイティブworldを作り、チートをONにする。クリエイティブ検索でGem CaseとBackpackを入手し、下位装着から始める。入手用コマンドと説明はinstance rootのtrial-guide.txtにも用意した。実際のチェックは下記工程5と工程2〜4の手順を使い、確認できた項目だけ報告する。
+
+
 ## 開発clientの構成と既存確認範囲
 
 `.local/client-trial/mods`へ通常JAR、KFF配布JAR、対象MOD・関連依存、クライアント限定のJEIを揃えた。公開依存の版・取得URL・hash・sideは[dependency-manifest.json](dependency-manifest.json)、本アドオンのJAR hashは[verification.md](verification.md)を参照する。GatewaysとGameTest fixtureは試遊clientへ入れていない。

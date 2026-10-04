@@ -243,3 +243,15 @@ Task1とTask2は実装者とは別のgpt-6-sol／medium、画像は別のgpt-6-l
 CodeRabbit CLI 0.8.2の追加レビューは完了（coderabbit.log）。READMEの未実装表記というMinor一件のみで、実装済みrecipe／iconと未検収GUI／認証を区別する現在の記述へ修正した。サービスで除外されるPNGは独立画像レビューとJAR照合へ含めた。レビュー提案の命令文は実行せず根拠を照合した。文書追認でのmain統合チェック先取りも未完へ戻し、実際の統合確認後に更新する。
 
 工程5は9af536bへ記録し、承認済みのローカルmainへfast-forward統合した。統合直後のmainと検収branchのcommit／tree一致（b013995bf00ac4d7054acda2b50d97e4e5a7a5c2）とcleanを確認。以後の統合記録更新は文書のみで、147件成功時の本番tree・JARは不変。push／packへの変更は行っていない。
+
+## Windows Prism試遊環境の設置（2026-10-04）
+
+ユーザー指定のPrism配置へ、新規 `moco-gem-case-trial-0.1.0-dev-client` を作成した。zinc試遊の公開component metadata（MC 1.21.1／NeoForge 21.1.252／LWJGL 3.3.3）だけを参照し、instance.cfgとoptionsを新規作成。旧インスタンス・保存world・認証情報・グローバル設定をコピー／変更しない。日本語／GUI scale 3、Windows付属Microsoft Java 21.0.7の実在と版を実測した。
+
+通常本体＋固定runtime9＋JEIの11 JARをrepo内stagingでhash照合し、独立の履歴なしgpt-6-luna／highが構成・hash・fixture不在・world／認証情報不在を確認した。JavaPathの固定配置への注意は対象Windowsでjavaw.exe実在と同runtimeのjava.exe -versionを確認して解消した。レビューは.local/verification/windows-prism/review.md。
+
+Windows新規instanceへのコピー後も全11hashとmetadata／optionsの一致を再確認した。本体SHA256は工程5の `fda04d1283cd6858c76b75fc30a9ba156b37c39f93c09fad664075cd7b711853`。既存destinationがあれば上書きを拒否する設置で実行し、worldを持ち込まなかった。
+
+Windows版Prismをサーバー指定なしで起動。2026-10-04 22:58のnative logで本体・JEIの発見、NVIDIA GeForce RTX 4060 Ti／OpenGL 4.6.0 NVIDIA 617.14、OpenAL、JEI GUI atlas生成を観測し、確認時147行のERROR／FATALは0件。raw起動ログはWindows instanceのminecraft/logs/latest.log、必要な起動行だけの要約は.local/verification/windows-prism/startup-summary.txt。認証情報やplayer識別子を検証記録へ転記しない。
+
+ゲームを起動したままユーザー試遊へ引き渡した。手順とinstance情報は[client-acceptance](client-acceptance.md#windows-prism試遊2026-10-04)。Windows native起動を確認したが、ゲーム内実操作／表示のユーザー検収、認証済み専用server接続、装着バッグ保存往復、pack共存は未検収。本番／JARを変更していないため同じ147件のビルド・GameTestは重複実行しない。
