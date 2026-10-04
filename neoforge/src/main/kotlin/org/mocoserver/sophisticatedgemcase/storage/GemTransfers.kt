@@ -40,13 +40,18 @@ internal object GemTransfers {
         }
         val wrapper = GemCaseUpgradeItem.find(storage)
         val before = wrapper?.snapshot() as? GemStorageState.Ready
-        return if (wrapper != null && before != null) move(storage, wrapper, before) else 0
+        return if (wrapper != null && before != null) {
+            GemOperationContext.exclusive(storage) { permit -> move(storage, wrapper, before, permit) } ?: 0
+        } else {
+            0
+        }
     }
 
     private fun move(
         storage: IStorageWrapper,
         wrapper: GemCaseUpgradeWrapper,
         before: GemStorageState.Ready,
+        permit: GemTransferPermit,
     ): Int {
         val inventory = storage.inventoryHandler
         val changes = linkedMapOf<Int, Pair<ItemStack, ItemStack>>()
@@ -66,20 +71,59 @@ internal object GemTransfers {
                 }
             }
         }
+        val plan = GemBulkMovePlan(changes, before, counts, moved)
+        return commitMove(storage, wrapper, plan, permit)
+    }
+
+    @Suppress("TooGenericExceptionCaught") // native保存callback失敗では全通常slotを戻して元の例外を伝える。
+    private fun commitMove(
+        storage: IStorageWrapper,
+        wrapper: GemCaseUpgradeWrapper,
+        plan: GemBulkMovePlan,
+        permit: GemTransferPermit,
+    ): Int {
+        val inventory = storage.inventoryHandler
         val currentMatches =
-            changes.all { (slot, pair) ->
+            plan.changes.all { (slot, pair) ->
                 ItemStack.matches(inventory.getStackInSlot(slot), pair.first)
             }
-        return if (moved > 0 && currentMatches && wrapper.snapshot() == before) {
-            changes.forEach { (slot, pair) -> inventory.setStackInSlot(slot, pair.second) }
-            if (wrapper.replace(before.counts, counts)) {
-                moved
+        if (plan.moved <= 0 || !currentMatches || wrapper.snapshot() != plan.before) return 0
+        return try {
+            plan.changes.forEach { (slot, pair) -> inventory.setStackInSlot(slot, pair.second) }
+            if (wrapper.replace(plan.before.counts, plan.updatedCounts, permit)) {
+                plan.moved
             } else {
-                changes.forEach { (slot, pair) -> inventory.setStackInSlot(slot, pair.first) }
+                restoreMove(inventory, plan.changes, null)
                 0
             }
-        } else {
-            0
+        } catch (failure: RuntimeException) {
+            restoreMove(inventory, plan.changes, failure)
+            throw failure
         }
     }
+
+    @Suppress("TooGenericExceptionCaught") // 一つの復元callbackが失敗しても残りslotを復元し、失敗を集約する。
+    private fun restoreMove(
+        inventory: net.neoforged.neoforge.items.IItemHandlerModifiable,
+        changes: Map<Int, Pair<ItemStack, ItemStack>>,
+        failure: RuntimeException?,
+    ) {
+        var primary = failure
+        for ((slot, pair) in changes.entries.toList().asReversed()) {
+            try {
+                inventory.setStackInSlot(slot, pair.first)
+            } catch (recovery: RuntimeException) {
+                val previous = primary
+                if (previous == null) primary = recovery else previous.addSuppressed(recovery)
+            }
+        }
+        if (failure == null) primary?.let { throw it }
+    }
 }
+
+private data class GemBulkMovePlan(
+    val changes: Map<Int, Pair<ItemStack, ItemStack>>,
+    val before: GemStorageState.Ready,
+    val updatedCounts: org.mocoserver.sophisticatedgemcase.core.GemCounts,
+    val moved: Int,
+)

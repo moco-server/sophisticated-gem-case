@@ -30,6 +30,49 @@ import org.mocoserver.sophisticatedgemcase.upgrade.GemCaseUpgradeWrapper
 object GemMaterialStorageGameTests {
     @JvmStatic
     @GameTest(template = "empty")
+    fun rejectsMaterialSimulationDuringExclusiveProcessing(helper: GameTestHelper) {
+        val bag = GemTestFixtures.backpack()
+        bag.upgradeHandler.setStackInSlot(0, ItemStack(ModItems.advancedGemCaseUpgrade.get()))
+        val handler = GemMaterialHandler(bag, helper.level) { it.`is`(Items.DIAMOND) }
+        handler.insertItem(0, ItemStack(Items.DIAMOND, 3), false)
+        GemOperationContext.exclusive(bag) {
+            helper.assertTrue(
+                handler.insertItem(1, ItemStack(Items.DIAMOND), true).count == 1,
+                "Simulation promised an insert rejected during exclusive processing",
+            )
+            helper.assertTrue(handler.extractItem(0, 1, true).isEmpty, "Simulation promised an exclusive extraction")
+        }
+        helper.assertTrue(handler.getStackInSlot(0).count == 3, "Exclusive rejection changed materials")
+        helper.succeed()
+    }
+
+    @JvmStatic
+    @GameTest(template = "empty")
+    fun restoresSupplementSettingWhenItsSaveCallbackThrows(helper: GameTestHelper) {
+        val bag = GemTestFixtures.backpack()
+        bag.upgradeHandler.setStackInSlot(0, ItemStack(ModItems.advancedGemCaseUpgrade.get()))
+        val stack = bag.upgradeHandler.getStackInSlot(0)
+        var callbacks = 0
+        val wrapper =
+            GemCaseUpgradeWrapper(bag, stack) {
+                callbacks++
+                if (callbacks == 1) throw IllegalStateException("setting save failure")
+            }
+        bag.upgradeHandler.slotWrappers[0] = wrapper
+        var failed = false
+        try {
+            wrapper.replaceProcessingSettings(false, true)
+        } catch (_: IllegalStateException) {
+            failed = true
+        }
+        helper.assertTrue(failed, "Setting save failure was swallowed")
+        helper.assertTrue(stack.get(ModDataComponents.gemProcessingSettings.get()) == null, "Failed setting persisted")
+        helper.assertTrue(callbacks == 2, "Setting recovery callback missing")
+        helper.succeed()
+    }
+
+    @JvmStatic
+    @GameTest(template = "empty")
     fun boundsBothNewComponentSummariesToTwoBytes(helper: GameTestHelper) {
         val components =
             listOf(

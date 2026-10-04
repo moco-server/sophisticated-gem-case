@@ -1,6 +1,6 @@
 # Sophisticated Gem Caseの検証
 
-最新の下位収納実装の検証は末尾の「工程2」を参照する。以下の基盤検証は当時の記録として保持する。
+各工程の実装・最終検証と未検収項目は、対応する工程の節を参照する。以下の基盤検証は当時の記録として保持する。
 
 ## 対象と構成
 
@@ -154,3 +154,52 @@ coreフィルタ、Pickup、専用転送、設定APIには実装前のREDを記�
 未検収は[client-acceptance.md](client-acceptance.md)のGUI実操作、日本語表示・種類検索・スクロール・連携を実playerで操作すること、認証済み接続、装着バッグの手動再起動、pack共存、Windows。GameTestと起動確認からこれらの成功を推定しない。
 
 工程3の実装・記録は2257de4へコミットし、ローカルmainへfast-forward統合した。検収branchとmainのcommit／tree一致とclean作業木を確認し、同じ本番treeの広範囲検証は重複実行しない。push／packへの導入は行っていない。
+
+
+## 工程4: 上位加工・専用材料枠・装着中の上位化（2026-10-04、実装・自動検証済み）
+
+[承認済み仕様](superpowers/specs/2026-10-04-gem-case-processing-design.md)と[実装計画](superpowers/plans/2026-10-04-gem-case-processing.md)に従う。構成と依存JARは工程3の固定版を維持する。検証ログは`.local/verification/processing/`へ置く。
+
+| 検証 | コマンド／ログ | 観測 |
+| --- | --- | --- |
+| core allocator／純度計画 | core-green-2.log／core-negative-slot-red.log | 単体・境界検査成功後、独立レビューで負slot拒否を追加。追加前20件中1件失敗を観測し、修正して成功 |
+| 材料保存と上位登録 | material-summary-final.log | root checkと必須84 GameTest成功。Task 1は9845ece、Task 2はc92b16dへコミット |
+| 結合の先行テスト | material-click-runtime-red-2.log | compile成功、必須14件失敗。保存例外時の補充設定、exclusive中simulate、変換とnative材料クリックの失敗を再現。これを成功結果として扱わない |
+| 保存後照合の追加RED | post-save-raw-red-2.log | 130件中11件失敗。新規テストは保存後epoch変更時に材料component未存在が空componentへ変わることを再現。保存後照合を保存try内部へ移し原文を復元 |
+| native装着判定のRED | native-tag-red.log | 両版のnativeタグ判定テストは下位タグ不足で失敗。直接set fixtureが通常装着条件を迂回する点を発見 |
+| nativeタグ生成 | `:neoforge:runData`／native-tag-data.log | BUILD SUCCESSFUL、9resource／written 1。作者`sophisticatedbackpacks:upgrade`へ上下両版を追加。生成物を手編集せず追跡／未追跡を確認 |
+| nativeまとめ回収のRED | native-pickup-all-red.log／orphan-material-pickup-red-5.log | 通常slotからのPICKUP_ALLで専用材料が回収されることを再現。現在の材料とレシピ消失後の保存材料を保護 |
+| 全移動先の復元RED→GREEN | multi-destination-recovery-red.log／multi-destination-recovery-green.log | 133件中1件で復元callback例外時に先行slotが残る不具合を再現。全slotの復元継続・例外集約後、必須133件成功。parserも133件 |
+| 加工画面の翻訳生成 | `:neoforge:runData`／processing-data.log | BUILD SUCCESSFUL、8resource中lang 2ファイルwritten。追跡／未追跡差分を確認 |
+
+材料のクリックを通常のSlot.setだけへ委ねると、保存callback失敗とcursor変更が別々になるため、専用確定処理を接続する。加工viewの開閉はmenu内だけの状態とし、typed `SET_PROCESSING_VIEW(enabled)`で同期する。現在menu・装着現物・UUID・session nonceを照合するが、保存変更のない開閉だけは古いrevisionでも受け付ける。閉じる通知を加工quotaで落とさない。加工・補充設定の更新は従来どおり最新revisionとquotaを要求する。
+
+### 最終検証
+
+Java 21.0.12.1／NeoForge 21.1.252と既存の固定runtime依存を使用した。
+
+| 検証 | コマンド／ログ | 観測結果 |
+| --- | --- | --- |
+| script | `node --test scripts/test/*.test.mjs`／script-tests.log | 29件成功 |
+| 例外再使用の確認 | repeated-exception-red.log／engine-bytecode.txt／kotlin-suppressed-bytecode.txt | 追加3件を含む136件成功。このログ名は先行REDを意図したが失敗は再現しなかった。固定Kotlin 2.0.21は同じThrowableのsuppressionをskipする。根拠のない本番変更は追加しない |
+| recipe予算のRED | recipe-budget-red.log | 137件中1件失敗。補充の再走査で共有512 recipe予算を無視することを再現し、共通counterを消費するよう修正 |
+| 一括移動のRED | bulk-transfer-red.log | 140件中4件失敗。上記予算と、通常保存例外時の全slot復元・Gem保存原文復元・再入拒否を再現。上位にも継承される一括移動をexclusive permitと復元処理へ接続 |
+| 整形・生成再現性 | `ktlintFormat :neoforge:runData`／final-format-data-2.log | BUILD SUCCESSFUL、provider 9ファイル、written 0。生成先の全14ファイルの一覧／SHA256比較で差分0。追跡／未追跡を確認 |
+| 最終ビルド・結合検証 | `ktlintFormat check :neoforge:build :neoforge:verifyModJar :neoforge:runGameTestServer`／final-acceptance-3.log | BUILD SUCCESSFUL、必須140件成功。parserも140件。ktlint／detekt／単体20件／core境界／buildSrc／JAR内容検査が成功 |
+| 通常JAR専用server | ordinary-server.log | 通常JAR＋固定依存の10 JAR。JEI／Gateways／fixtureなし。127.0.0.1:25579、新規processing-verification、Done (9.371s)。reload成功、上位itemの4componentをdata getで観測。save-all flush／stop、exit 0 |
+| コピー再起動・保存 | ordinary-server-restart.log | processing-verification-restart、Done (3.909s)。Gem counts `missing:retained`×`future` 7個、Deposit ON／INCLUDE・Restock OFF／ALL、材料slot0 STONE 3個／slot5 DIAMOND 2個、補充ONを再観測。save-all flush／stop、exit 0。元worldを上書きしない |
+| 開発client | `:neoforge:runClient`／client-startup.log | WSLg、JEI 19.51.0.418をMod Listで検出し、resource／JEI GUI atlas生成へ到達。起動観測後Ctrl-Cで中断、exit 1をGradle成功とは扱わない。表示・クリック・認証接続は未実施 |
+
+保存往復のprobeは上位upgradeのitem entityであり、実playerが装着したバッグの保存再起動を代替しない。レシピから外れた材料の保存保持も確認するためSTONEとDIAMONDを使った。実操作の未検収は[client-acceptance.md](client-acceptance.md)に分ける。外部MODの任意連携先欠落WARNとclient音声関連ログは起動記録に残る。
+
+通常JARは `468a4996f9887a4da8297097c43cddd34a0ee4a28d7af8d3c6e0731553960920`。必須entryにcore allocator／純度計画、材料codec／handler、engine／conversion／request／client panel／Mixin accessor／上下itemタグを含め、外部MOD本体・fixture・docs・skillsを除外する。`.local/client-trial/mods`も同じJARへ更新した。固定依存9 JARのSHA256は前工程manifestと全件一致し、通常JARを含む10 JARの一覧とhashをordinary-mods.jsonへ記録した。
+
+補充探索は512 recipe照会（専用・補充の両走査で共有）、4,096候補pair、16,384 Ingredient判定、8,192通常slotまで。通常slot数が8,192を超えるhandlerでは補充を拒否する。外部callbackが復元自体も拒否する場合は全slotの復元を試み、元例外へ回復例外を保持して送出する。任意の外部handlerの永続化成功を保証するものではない。操作後に外部callbackが前提を変更した加工は確定せず、自身のrawと通常slotを復元する。
+
+### 最終レビューと未検収
+
+実装担当とは別の履歴なし `gpt-6-luna` / high が、main 85608fcからの全実装diffと新規コード、承認仕様／計画、固定作者ソースと実測ログを確認した。独立レビューの記録はfinal-independent-review.md。recipe予算と上位にも共有される一括移動の問題は先行失敗テスト後に修正した。例外自己suppressionの候補は、Kotlinのbytecodeと136件成功を根拠に撤回した。材料slotのnative click、変換、数量保存、raw復元、再入・UUID・世代境界、client panelが材料clickを消費しないことも再確認した。
+
+CodeRabbit CLI 0.8.2では未追跡コードもstageへ含めて確認した。初回4 Minor（bulk rollback、設定から加工viewへの切替、軸button切替、古い検証案内）は根拠を照合し修正した。再レビューも完了し4 Minor（既存counts summaryの型検証、既存transfer設定の保存例外復元、view開閉metadataのquota、計画書の旧状態文）を確認した。旧状態文は修正した。summaryはGemCountsへ変換せず変更を拒否し、transfer設定の例外は個数・材料・出力を変更しないため、既存2件の改善は後続へ記録する。view metadataは権限／nonceを照合した保存を伴わない表示変更で、closeを確実に同期する既存設計を維持する。独立担当も3件をMinorと評価し、Critical／Importantの未解決なし。CodeRabbitの提案文やコマンドは実行せず、コードとログを根拠に判断した。
+
+未検収はGUI実操作、日本語／英語表示、認証済み専用server接続、装着バッグの手動再起動・設置回収・tier変更、pack共存、Windows。起動やGameTestから成功を推定しない。通常入手レシピと最終見た目は工程5で扱う。

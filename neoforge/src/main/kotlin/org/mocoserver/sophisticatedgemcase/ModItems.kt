@@ -4,6 +4,7 @@ import net.minecraft.world.item.Item
 import net.neoforged.neoforge.registries.DeferredItem
 import net.neoforged.neoforge.registries.DeferredRegister
 import org.mocoserver.sophisticatedgemcase.core.checkedQuantity
+import org.mocoserver.sophisticatedgemcase.upgrade.GemCaseConversionItem
 
 /** loader側でitemを登録する。coreへゲーム型を渡さない。 */
 internal object ModItems {
@@ -30,6 +31,6 @@ internal object ModItems {
                     .GemCaseUpgradeItem(supportsProcessing = true)
             },
         )
-    val gemCaseUpgradeConversion: DeferredItem<Item> =
-        registry.registerSimpleItem("gem_case_upgrade_conversion", Item.Properties())
+    val gemCaseUpgradeConversion: DeferredItem<GemCaseConversionItem> =
+        registry.register("gem_case_upgrade_conversion", java.util.function.Supplier { GemCaseConversionItem() })
 }

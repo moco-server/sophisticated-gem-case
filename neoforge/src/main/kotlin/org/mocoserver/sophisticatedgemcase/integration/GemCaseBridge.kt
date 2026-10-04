@@ -29,6 +29,10 @@ internal object GemCaseBridge {
         clickType: ClickType,
         player: Player,
     ): Boolean {
+        val handled =
+            GemCaseConversion.tryHandle(menu, slotId, button, clickType, player) ||
+                GemMaterialClicks.tryHandle(menu, slotId, button, clickType, player)
+        if (handled) return true
         val wrapper = GemCaseUpgradeItem.find(menu.storageWrapper)
         val carriedGem = StandardGem.keyOf(menu.carried) != null
         val normalSlot = slotId in 0 until menu.numberOfStorageInventorySlots

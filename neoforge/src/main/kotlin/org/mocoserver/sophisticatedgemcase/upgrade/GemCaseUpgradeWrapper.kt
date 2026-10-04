@@ -1,8 +1,10 @@
 package org.mocoserver.sophisticatedgemcase.upgrade
 
 import net.minecraft.core.HolderLookup
+import net.minecraft.core.component.DataComponentType
 import net.minecraft.nbt.ListTag
 import net.minecraft.nbt.Tag
+import net.minecraft.server.level.ServerLevel
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.component.CustomData
 import net.neoforged.fml.util.thread.SidedThreadGroups
@@ -16,8 +18,10 @@ import org.mocoserver.sophisticatedgemcase.core.GemTransferSettings
 import org.mocoserver.sophisticatedgemcase.integration.GemOperationContext
 import org.mocoserver.sophisticatedgemcase.integration.GemTransferPermit
 import org.mocoserver.sophisticatedgemcase.processing.GemProcessingCommit
+import org.mocoserver.sophisticatedgemcase.processing.GemPurityRecipes
 import org.mocoserver.sophisticatedgemcase.storage.GemMaterialCodec
 import org.mocoserver.sophisticatedgemcase.storage.GemMaterialContents
+import org.mocoserver.sophisticatedgemcase.storage.GemMaterialHandler
 import org.mocoserver.sophisticatedgemcase.storage.GemMaterialState
 import org.mocoserver.sophisticatedgemcase.storage.GemProcessingHandler
 import org.mocoserver.sophisticatedgemcase.storage.GemProcessingSettingsCodec
@@ -43,12 +47,30 @@ internal class GemCaseUpgradeWrapper(
     private var cachedState: GemStorageState? = null
     private var cachedSettingsData: net.minecraft.world.item.component.CustomData? = null
     private var cachedSettingsState: GemSettingsState? = null
+    private var cachedMaterialsData: CustomData? = null
+    private var cachedMaterialsRegistries: HolderLookup.Provider? = null
+    private var cachedMaterialsState: GemMaterialState? = null
 
     val supportsProcessing: Boolean
         get() = (upgrade.item as GemCaseUpgradeItem).supportsProcessing
 
-    fun materialsSnapshot(registries: HolderLookup.Provider): GemMaterialState =
-        GemMaterialCodec.read(upgrade.get(ModDataComponents.gemProcessingMaterials.get()), registries)
+    fun materialHandler(level: ServerLevel): GemMaterialHandler =
+        GemMaterialHandler(storageWrapper, level) { GemPurityRecipes.isMaterial(level, it) }
+
+    fun materialsSnapshot(registries: HolderLookup.Provider): GemMaterialState {
+        val data = upgrade.get(ModDataComponents.gemProcessingMaterials.get())
+        val previous = cachedMaterialsState
+        // native6slotの毎tick同期で同じ永続NBTを繰り返しdecodeしない。
+        return if (data === cachedMaterialsData && registries === cachedMaterialsRegistries && previous != null) {
+            previous
+        } else {
+            GemMaterialCodec.read(data, registries).also {
+                cachedMaterialsData = data
+                cachedMaterialsRegistries = registries
+                cachedMaterialsState = it
+            }
+        }
+    }
 
     fun processingSettingsSnapshot(): GemProcessingSettingsState =
         GemProcessingSettingsCodec.read(upgrade.get(ModDataComponents.gemProcessingSettings.get()))
@@ -59,11 +81,16 @@ internal class GemCaseUpgradeWrapper(
         updated: GemMaterialContents,
         registries: HolderLookup.Provider,
         permit: GemTransferPermit? = null,
+        verify: () -> Boolean = { true },
     ): Boolean {
         if (!processingMayMutate(permit)) return false
         val state = materialsSnapshot(registries) as? GemMaterialState.Ready
         return if (state?.contents == expected && GemMaterialCodec.canWrite(updated, registries)) {
-            saveMaterialData(GemMaterialCodec.write(updated, registries))
+            saveProcessingData(
+                ModDataComponents.gemProcessingMaterials.get(),
+                GemMaterialCodec.write(updated, registries),
+                verify,
+            )
             true
         } else {
             false
@@ -77,8 +104,7 @@ internal class GemCaseUpgradeWrapper(
         if (!processingMayMutate(null)) return false
         val state = processingSettingsSnapshot() as? GemProcessingSettingsState.Ready
         return if (state?.useBackpackMaterials == expected) {
-            upgrade.set(ModDataComponents.gemProcessingSettings.get(), GemProcessingSettingsCodec.write(updated))
-            save()
+            saveProcessingData(ModDataComponents.gemProcessingSettings.get(), GemProcessingSettingsCodec.write(updated))
             true
         } else {
             false
@@ -93,6 +119,7 @@ internal class GemCaseUpgradeWrapper(
         change: GemProcessingCommit,
         registries: HolderLookup.Provider,
         permit: GemTransferPermit,
+        verify: () -> Boolean = { true },
     ): Boolean {
         if (!processingMayMutate(permit)) return false
         return if (processingMatches(change, registries) &&
@@ -102,6 +129,7 @@ internal class GemCaseUpgradeWrapper(
             saveProcessingData(
                 GemStorageCodec.write(change.updatedCounts),
                 GemMaterialCodec.write(change.updatedMaterials, registries),
+                verify,
             )
             true
         } else {
@@ -126,6 +154,7 @@ internal class GemCaseUpgradeWrapper(
     private fun saveProcessingData(
         counts: CustomData,
         materials: CustomData,
+        verify: () -> Boolean,
     ) {
         val countsType = ModDataComponents.gemStorage.get()
         val materialsType = ModDataComponents.gemProcessingMaterials.get()
@@ -135,6 +164,7 @@ internal class GemCaseUpgradeWrapper(
             upgrade.set(countsType, counts)
             upgrade.set(materialsType, materials)
             save()
+            check(verify()) { "加工保存後の前提が変わりました" }
         } catch (failure: RuntimeException) {
             upgrade.set(countsType, oldCounts)
             upgrade.set(materialsType, oldMaterials)
@@ -149,12 +179,16 @@ internal class GemCaseUpgradeWrapper(
 
     // save callbackの例外時は自分が変更したcomponentだけを復元し、回復失敗も呼出元へ伝える。
     @Suppress("TooGenericExceptionCaught")
-    private fun saveMaterialData(data: CustomData) {
-        val component = ModDataComponents.gemProcessingMaterials.get()
+    private fun saveProcessingData(
+        component: DataComponentType<CustomData>,
+        data: CustomData,
+        verify: () -> Boolean = { true },
+    ) {
         val old = upgrade.get(component)
         try {
             upgrade.set(component, data)
             save()
+            check(verify()) { "材料保存後の前提が変わりました" }
         } catch (failure: RuntimeException) {
             upgrade.set(component, old)
             try {
@@ -223,8 +257,7 @@ internal class GemCaseUpgradeWrapper(
         if (Thread.currentThread().threadGroup != SidedThreadGroups.SERVER || !mayMutate(permit)) return false
         val current = snapshot() as? GemStorageState.Ready
         return if (current?.counts == expected && GemStorageCodec.canWrite(updated)) {
-            upgrade.set(ModDataComponents.gemStorage.get(), GemStorageCodec.write(updated))
-            save()
+            saveProcessingData(ModDataComponents.gemStorage.get(), GemStorageCodec.write(updated))
             true
         } else {
             false

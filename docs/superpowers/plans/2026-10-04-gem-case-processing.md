@@ -1,6 +1,6 @@
 # 上位Gem Case・材料枠・加工・装着中上位化 Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** 上位Gem Caseへ6材料枠と実行時recipeによる純度強化を追加し、中身入り下位を保存データごと装着中に上位化する。
 
@@ -8,7 +8,7 @@
 
 **Tech Stack:** MC 1.21.1／NeoForge 21.1.252／Java 21／Kotlin 2.0.21／KFF 5.5.0／FML 4.0.44／Apotheosis 8.9.0／Core 1.5.2.2343／Backpacks 3.26.6.2174。
 
-**Spec:** [2026-10-04承認の上位加工設計](../specs/2026-10-04-gem-case-processing-design.md)。工程3統合後mainは `85608fc`、spec commitは `57a504d`。本計画作成時に工程4本番は未変更。
+**Spec:** [2026-10-04承認の上位加工設計](../specs/2026-10-04-gem-case-processing-design.md)。工程3統合後mainは `85608fc`、spec commitは `57a504d`。工程4は実装・自動検証済み。GUI実操作と認証接続などの未検収は検証記録へ分ける。
 
 ## Global Constraints
 
@@ -96,13 +96,13 @@ assertEquals(mapOf(0 to 1), allocation.rightUses)
 
 `GemRecipeEpoch.current(): Long`／`advance(): Long`／`install(event: AddReloadListenerEvent): Unit`。NeoForge.EVENT_BUSの固定版AddReloadListenerEventへ登録したResourceManagerReloadListenerがapply時にAtomicLong epochを進める。recipe表を恒久cacheせず毎計画にGemCuttingMenu.getRecipes(level)を使う。
 
-- [ ] 実バッグ・上位・作者実recipeを使うGameTestを先に追加する。Gem2→1・左右消費・入力不足／出力満杯／材料不足の無変更、通常材料OFF／ON、プレイヤーと別バッグ不使用をassertし `:neoforge:runGameTestServer` でREDを記録する。
-- [ ] 専用6枠だけの選択は固定GemUpgradeMatchのslot走査とGemCuttingRecipe.getMatchの順を再現する。両材料は別slot、最初の成立recipeを使う。成立しない場合だけ補充ONの左右候補組合せを試し、Ingredient判定結果とslot残数をTask 1へ渡す。GemMaterialHandlerのpredicateへ現在recipeの左右Ingredient判定を接続する。
-- [ ] 計画budgetを一つの所有値にまとめ、512／4,096／16,384／8,192で停止する。Ingredient候補を順序そのまま扱い、固定のgem_dust等の材料表は作らない。Gem input／outputをStandardGemで解決して構成可能性を検査する。
-- [ ] 同バッグexclusiveで計画、選択した全slot／counts／settings／epochの再照合、全codec事前検証、通常slot変更とwrapper.commitProcessingを行う。通常inventoryはstorage.inventoryHandlerの実slotだけを使い、processing／IO wrapperや仮想Gem slotを通さない。例外時に自身が変更した通常slotとcomponentsをsnapshotへ復元し、成功通知前のpartial変更を残さない。
-- [ ] 複数候補／tag／左右共有stackと正常Gem＋material総量、専用優先と不足分だけのnormal消費、同native6slotの場合の作者選択一致をテストする。recipe変更テストは同期メソッド内でRecipeManager.replaceRecipesを使い、旧一覧をfinallyで必ず復元してepochをadvanceする。他GameTestへglobal変更を残さず、runAfterDelay中に変更を保持しない。
-- [ ] callback再入の設定／Gem／材料編集・remove・変換を拒否するテストを追加する。別バッグは許可、通常slot変更後またはsave callbackの例外で旧snapshotへ復元、例外後の次操作成功、64成功後の停止／途中不足時の成功分だけ保持をassertする。32KiB preview超過と最大slot／候補budgetでは無変更を確認する。
-- [ ] `check :neoforge:runGameTestServer` と結果parserが成功後コミットする。reload listenerのapply APIとRecipeManager.replaceRecipesの対象版資料を検証記録へ残す。
+- [x] 実バッグ・上位・作者実recipeを使うGameTestを先に追加する。Gem2→1・左右消費・入力不足／出力満杯／材料不足の無変更、通常材料OFF／ON、プレイヤーと別バッグ不使用をassertし `:neoforge:runGameTestServer` でREDを記録する。
+- [x] 専用6枠だけの選択は固定GemUpgradeMatchのslot走査とGemCuttingRecipe.getMatchの順を再現する。両材料は別slot、最初の成立recipeを使う。成立しない場合だけ補充ONの左右候補組合せを試し、Ingredient判定結果とslot残数をTask 1へ渡す。GemMaterialHandlerのpredicateへ現在recipeの左右Ingredient判定を接続する。
+- [x] 計画budgetを一つの所有値にまとめ、512／4,096／16,384／8,192で停止する。Ingredient候補を順序そのまま扱い、固定のgem_dust等の材料表は作らない。Gem input／outputをStandardGemで解決して構成可能性を検査する。
+- [x] 同バッグexclusiveで計画、選択した全slot／counts／settings／epochの再照合、全codec事前検証、通常slot変更とwrapper.commitProcessingを行う。通常inventoryはstorage.inventoryHandlerの実slotだけを使い、processing／IO wrapperや仮想Gem slotを通さない。例外時に自身が変更した通常slotとcomponentsをsnapshotへ復元し、成功通知前のpartial変更を残さない。
+- [x] 複数候補／tag／左右共有stackと正常Gem＋material総量、専用優先と不足分だけのnormal消費、同native6slotの場合の作者選択一致をテストする。recipe変更テストは同期メソッド内でRecipeManager.replaceRecipesを使い、旧一覧をfinallyで必ず復元してepochをadvanceする。他GameTestへglobal変更を残さず、runAfterDelay中に変更を保持しない。
+- [x] callback再入の設定／Gem／材料編集・remove・変換を拒否するテストを追加する。別バッグは許可、通常slot変更後またはsave callbackの例外で旧snapshotへ復元、例外後の次操作成功、64成功後の停止／途中不足時の成功分だけ保持をassertする。32KiB preview超過と最大slot／候補budgetでは無変更を確認する。
+- [x] `check :neoforge:runGameTestServer` と結果parserが成功後コミットする。reload listenerのapply APIとRecipeManager.replaceRecipesの対象版資料を検証記録へ残す。
 
 ## Task 4: 中身入り下位の装着中変換
 
@@ -110,12 +110,12 @@ assertEquals(mapOf(0 to 1), allocation.rightUses)
 
 **Interfaces:** `GemCaseConversion.tryHandle(menu: StorageContainerMenuBase<*>, slotId: Int, button: Int, clickType: ClickType, player: Player): Boolean` は「専用変換cursorでupgrade slot右クリック」の対象を消費する（拒否時もtrue）。他操作はfalse。slotIdをmenu.totalSlotsNumberで範囲確認し、menu.getSlot(slotId)が公開StorageUpgradeSlotであることとupgradeSlotsへの所属を確認する。slot.slotIndexがupgradeHandlerのindexであり、global slotIdをそのままhandlerへ渡さない。clientは保存・cursorを変更せず消費してnative packetをserverへ渡し、serverはplayer.containerMenu === menu／stillValid／現在バッグUUID／slot／下位現物／exclusive／cursorを検証する。
 
-- [ ] native menu.clickedの実slot経由で、中身入り下位＋設定＋custom name／外来componentが上位へ同じ内容で継承され、creative以外のcursorが一個だけ減るテストを先に追加する。未接続でREDを確認する。
-- [ ] 現在下位をcopyして上位ItemStackへ全componentを載せ、上位専用componentが旧下位にあれば拒否する。Gem保存はLocked原文を含め書換えず、上位の新材料は不在→空、補充は不在→OFFとする。
-- [ ] 上位canAdd／extraInsertConditionsを「対象slotの旧下位だけを置換する」条件で確認し、他slotの重複を拒否する。旧下位canRemove／canSwapを緩めず、一般cursor入替で中身入りを持ち出せないことをassertする。専用変換だけupgradeHandlerの現在slotを直接置換する。
-- [ ] exclusive内でcopy再読取・装着条件・counts/material codecの状態保持を確認後、upgradeHandler.setStackInSlotで保存／wrapper更新を通し、slotと上位component保持を再照合後にcursorを減らす。失敗・callback例外では旧slotとcursorを復元し、復元失敗を再送出する。処理した右クリックを既存GemCaseBridgeの先頭で判定し、他の投入／Shift経路を維持する。
-- [ ] future counts／settings raw、上位専用raw付き下位の拒否、無効cursor／左クリック／閉じた旧menu／距離／UUID・slot差替え／exclusive再入、target装着拒否とsave例外の全不変を検査する。成功後に新session、上下合計一個、上位Pickup／Deposit／Restockのfilterと実移動が維持されることもテストする。
-- [ ] `check :neoforge:runGameTestServer` と結果parserが成功後コミットする。native Stack conversionの既定target生成を流用したとは記録しない。
+- [x] native menu.clickedの実slot経由で、中身入り下位＋設定＋custom name／外来componentが上位へ同じ内容で継承され、creative以外のcursorが一個だけ減るテストを先に追加する。未接続でREDを確認する。
+- [x] 現在下位をcopyして上位ItemStackへ全componentを載せ、上位専用componentが旧下位にあれば拒否する。Gem保存はLocked原文を含め書換えず、上位の新材料は不在→空、補充は不在→OFFとする。
+- [x] 上位canAdd／extraInsertConditionsを「対象slotの旧下位だけを置換する」条件で確認し、他slotの重複を拒否する。旧下位canRemove／canSwapを緩めず、一般cursor入替で中身入りを持ち出せないことをassertする。専用変換だけupgradeHandlerの現在slotを直接置換する。
+- [x] exclusive内でcopy再読取・装着条件・counts/material codecの状態保持を確認後、upgradeHandler.setStackInSlotで保存／wrapper更新を通し、slotと上位component保持を再照合後にcursorを減らす。失敗・callback例外では旧slotとcursorを復元し、復元失敗を再送出する。処理した右クリックを既存GemCaseBridgeの先頭で判定し、他の投入／Shift経路を維持する。
+- [x] future counts／settings raw、上位専用raw付き下位の拒否、無効cursor／左クリック／閉じた旧menu／距離／UUID・slot差替え／exclusive再入、target装着拒否とsave例外の全不変を検査する。成功後に新session、上下合計一個、上位Pickup／Deposit／Restockのfilterと実移動が維持されることもテストする。
+- [x] `check :neoforge:runGameTestServer` と結果parserが成功後コミットする。native Stack conversionの既定target生成を流用したとは記録しない。
 
 ## Task 5: 材料slot・世代付き加工要求・preview・画面
 
@@ -129,23 +129,23 @@ assertEquals(mapOf(0 to 1), allocation.rightUses)
 
 sessionはcounts／transfer settings／materials／processing settings／recipeEpochを一組で保持する。`refresh(wrapper, registries: HolderLookup.Provider)` に既存呼出しを揃え、どれかが変わると同じrevisionを増やす。containerはowner.level().registryAccess()を渡す。clientは現在のoutput、countsとtransfer settingsの完全な同世代、非Lockedの加工previewが揃うまで加工を送らない。
 
-- [ ] requestの旧世代／replay／closed／distance／UUID／upgrade差替え／下位／Locked／quota超過、enumと256／257byte、32KiB wire境界の先行GameTestsを追加し、新APIのREDを確認する。
-- [ ] server containerへ上位だけ6つのGemMaterialSlotを作る。server側はownerのServerLevelとGemPurityRecipes.isMaterial predicateを渡したGemMaterialHandler、client側は永続保存しないItemStackHandlerのmirrorを使う。クリック／ShiftのmayPlace・mayPickup・simulate・最大stackと保存予算を確認し、複合操作を安全に処理できない場合は変更前に拒否する。壊れた材料でも正常なGemの手動操作を維持する。
-- [ ] menu snapshotとreload epochを統合し、typed requestをregisterする。処理後はnative material slot更新をbroadcastChangesで先に送った後、同じ接続の順序でcounts／settings／加工previewを送る。初回previewもnative6slot同期後だけ発行し、client callback登録はcommonからclient型を参照しない。
-- [ ] 上位限定の加工viewを別GemProcessingPanelへ置き、既存200×205領域で収納／転送設定／加工を切り替える。種類／出力純度選択、6slot、選択recipeの必要材料と可否、補充ON／OFF、単発／Shift加工を表示する。必要材料と可否はserver previewだけから描く。hidden material slotの位置／isVisible／slotIsNotCoveredAtを一貫させ、隣接する通常slotを覆わない。
-- [ ] native6slotのクリック／右クリック／Shiftと余り、取り出し、数字キー／drag拒否の全無変更、recipe変更後の同countsでもrevision増加・旧preview拒否・新コストの加工、view切替、counts/settings/previewの世代不一致・途中同期で送信不可を検査する。材料／補充だけの更新でもrevisionが進むことを確認する。
-- [ ] 翻訳をdatagen入力へ追加し、`:neoforge:classes :neoforge:runData` 後に追跡／未追跡を検査する。別呼出しの `check :neoforge:build :neoforge:verifyModJar :neoforge:runGameTestServer` とparserが成功後コミットする。
+- [x] requestの旧世代／replay／closed／distance／UUID／upgrade差替え／下位／Locked／quota超過、enumと256／257byte、32KiB wire境界の先行GameTestsを追加し、新APIのREDを確認する。
+- [x] server containerへ上位だけ6つのGemMaterialSlotを作る。server側はownerのServerLevelとGemPurityRecipes.isMaterial predicateを渡したGemMaterialHandler、client側は永続保存しないItemStackHandlerのmirrorを使う。クリック／ShiftのmayPlace・mayPickup・simulate・最大stackと保存予算を確認し、複合操作を安全に処理できない場合は変更前に拒否する。壊れた材料でも正常なGemの手動操作を維持する。
+- [x] menu snapshotとreload epochを統合し、typed requestをregisterする。処理後はnative material slot更新をbroadcastChangesで先に送った後、同じ接続の順序でcounts／settings／加工previewを送る。初回previewもnative6slot同期後だけ発行し、client callback登録はcommonからclient型を参照しない。
+- [x] 上位限定の加工viewを別GemProcessingPanelへ置き、既存200×205領域で収納／転送設定／加工を切り替える。種類／出力純度選択、6slot、選択recipeの必要材料と可否、補充ON／OFF、単発／Shift加工を表示する。必要材料と可否はserver previewだけから描く。hidden material slotの位置／isVisible／slotIsNotCoveredAtを一貫させ、隣接する通常slotを覆わない。
+- [x] native6slotのクリック／右クリック／Shiftと余り、取り出し、数字キー／drag拒否の全無変更、recipe変更後の同countsでもrevision増加・旧preview拒否・新コストの加工、view切替、counts/settings/previewの世代不一致・途中同期で送信不可を検査する。材料／補充だけの更新でもrevisionが進むことを確認する。
+- [x] 翻訳をdatagen入力へ追加し、`:neoforge:classes :neoforge:runData` 後に追跡／未追跡を検査する。別呼出しの `check :neoforge:build :neoforge:verifyModJar :neoforge:runGameTestServer` とparserが成功後コミットする。
 
 ## Task 6: 配布・保存・独立レビュー・main統合
 
 **Files:** Modify `neoforge/build.gradle.kts` のverifyModJar requiredEntries、`README.md`／`docs/design.md`／`docs/verification.md`／`docs/client-acceptance.md`、本計画の実行記録。
 
-- [ ] 通常JARへcore allocator／plan、material codec／handler、engine／conversion／request／client panel、model／langが含まれる必須entry検査を追加する。fixture・外部MOD・docs・skillsを含めない。
-- [ ] 最後の本番変更後にroot `check :neoforge:build :neoforge:verifyModJar :neoforge:runGameTestServer` と `node scripts/check-gametest-result.mjs` を実行し、既存73件と新規が正の件数で成功したことを記録する。新しい変更・失敗がなければ同じ広範囲検証を重複しない。
-- [ ] datagenを再実行し、生成resource全一覧／SHA256／tracked・untracked比較で差分0を確認する。通常JARのhashと固定依存manifestの全hashを確認する。
-- [ ] `.local/processing-server` で通常JAR＋固定runtime依存だけを新規worldへ導入し、上位itemのGem counts／transfer設定／6材料／補充設定を保存、停止、worldをコピーして再起動し保持を観測する。通常JARの `/reload` も成功を観測する。装着バッグの手動保存検収とは分ける。JEI限定dev clientを起動し、GUI／認証接続／pack／Windowsは実施分だけ検収とする。
-- [ ] 実装者と別の履歴なしの安価reviewerへ最終diff、承認spec／plan、固定source、実測ログを渡す。Review Focusの5項目・数量・変換のcomponent継承・通常slot復元・通信権限を確認し、Important以上を根拠確認して修正・影響する検証を再実行する。
-- [ ] 実測結果と未実施、bounded handler／recipe制限、外部callbackの契約違反と復元失敗の扱いを記録・コミットし、ユーザーの既存承認でローカルmainへ統合する。検証済みbranchとmainのtree、clean作業木を確認して工程5へ進む。push／pack変更は含めない。
+- [x] 通常JARへcore allocator／plan、material codec／handler、engine／conversion／request／client panel、model／langが含まれる必須entry検査を追加する。fixture・外部MOD・docs・skillsを含めない。
+- [x] 最後の本番変更後にroot `check :neoforge:build :neoforge:verifyModJar :neoforge:runGameTestServer` と `node scripts/check-gametest-result.mjs` を実行し、既存73件と新規が正の件数で成功したことを記録する。新しい変更・失敗がなければ同じ広範囲検証を重複しない。
+- [x] datagenを再実行し、生成resource全一覧／SHA256／tracked・untracked比較で差分0を確認する。通常JARのhashと固定依存manifestの全hashを確認する。
+- [x] `.local/processing-server` で通常JAR＋固定runtime依存だけを新規worldへ導入し、上位itemのGem counts／transfer設定／6材料／補充設定を保存、停止、worldをコピーして再起動し保持を観測する。通常JARの `/reload` も成功を観測する。装着バッグの手動保存検収とは分ける。JEI限定dev clientを起動し、GUI／認証接続／pack／Windowsは実施分だけ検収とする。
+- [x] 実装者と別の履歴なしの安価reviewerへ最終diff、承認spec／plan、固定source、実測ログを渡す。Review Focusの5項目・数量・変換のcomponent継承・通常slot復元・通信権限を確認し、Important以上を根拠確認して修正・影響する検証を再実行する。
+- [x] 実測結果と未実施、bounded handler／recipe制限、外部callbackの契約違反と復元失敗の扱いを記録・コミットし、ユーザーの既存承認でローカルmainへ統合する。検証済みbranchとmainのtree、clean作業木を確認して工程5へ進む。push／pack変更は含めない。
 
 ## 固定API・実行条件・自己確認
 
@@ -153,4 +153,10 @@ sessionはcounts／transfer settings／materials／processing settings／recipeE
 
 Java 21は `/home/osamu/develop/moco-server/server-pack/.local/issue7-gradle/jdks/eclipse_adoptium-21-amd64-linux.2` を読取り利用する。JAVA_HOMEへ指定し、GRADLE_USER_HOME=`$PWD/.local/gradle`、JAVA_TOOL_OPTIONS=`-XX:ActiveProcessorCount=2`を使う。cache／JAR／world／logsは.local／buildに置く。
 
-specの登録と共有収納はTask 2、材料・補充保存はTask 2、recipe／二要求配分／budget／加工確定はTask 1／3、raw継承変換はTask 4、材料slot／世代／reload／画面はTask 5、配布と独立レビューはTask 6へ対応する。plan／preview／commitの型は上記Interfacesで統一した。Review Focusの5入力はそれぞれ担当taskの先行テストまたは境界テストに割り当て、工程3の既存連携を上位でも再検査する。現時点は計画のみで、工程4本番・tests・生成物は未変更。
+specの登録と共有収納はTask 2、材料・補充保存はTask 2、recipe／二要求配分／budget／加工確定はTask 1／3、raw継承変換はTask 4、材料slot／世代／reload／画面はTask 5、配布と独立レビューはTask 6へ対応する。plan／preview／commitの型は上記Interfacesで統一した。Review Focusの5入力はそれぞれ担当taskの先行テストまたは境界テストに割り当て、工程3の既存連携を上位でも再検査する。工程4本番・GameTests・生成resourceを実装し、必須140件とroot check／通常JAR内容検査、専用serverのreload・コピーworld保存往復、JEI入りclient起動を確認した。GUI実操作・認証接続・pack／Windowsは未検収で、チェックは実施可能な自動検証と未実施記録の完了を表す。
+
+## 実行記録
+
+Task 1は9845ece、Task 2はc92b16d。Task 3〜5はmenu/session/wrapperとnative slotの結合依存が強いため、結合検証・独立レビュー後に一つの整合した実装としてコミットする。GradleとGitは統括者が専有し、部分コードがbuild不能な状態の中間コミットは作らない。Task 6の結果は[検証記録](../../verification.md)へ集約した。最終実装ログは`.local/verification/processing/final-acceptance-3.log`、独立レビューは同dirのfinal-independent-review.md。通常JAR SHA256は468a4996f9887a4da8297097c43cddd34a0ee4a28d7af8d3c6e0731553960920。
+
+レビューでrecipe予算の再走査、保存後epoch変更時のraw未存在復元、native upgradeタグ不足、まとめ回収による材料slot迂回、全通常移動先の復元、上位にも共有される一括移動の例外と再入を検査・修正した。既存の専用Deposit／RestockはGem側フィルタだけに従うため、nativeフィルタとの二重一致を期待したテストを承認仕様に合わせた。view開閉metadataのquota例外とpanelがnative材料clickを譲る処理を加えた。

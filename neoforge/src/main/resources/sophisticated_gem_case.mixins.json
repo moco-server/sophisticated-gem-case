@@ -3,6 +3,6 @@
   "minVersion": "0.8",
   "package": "org.mocoserver.sophisticatedgemcase.mixin",
   "compatibilityLevel": "JAVA_21",
-  "mixins": ["BackpackWrapperMixin", "StorageContainerMenuMixin", "GemMergeInvoker", "GemUpgradeStorageAccessor", "DepositUpgradeMixin", "RestockUpgradeMixin"],
+  "mixins": ["BackpackWrapperMixin", "StorageContainerMenuMixin", "GemMergeInvoker", "GemUpgradeStorageAccessor", "DepositUpgradeMixin", "RestockUpgradeMixin", "GemSlotPositionAccessor"],
   "injectors": { "defaultRequire": 1 }
 }

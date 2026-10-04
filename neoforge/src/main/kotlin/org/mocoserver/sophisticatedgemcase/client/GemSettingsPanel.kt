@@ -26,7 +26,7 @@ import java.util.Locale
 internal class GemSettingsPanel(
     private val container: GemCaseContainer,
     private val screen: StorageScreenBase<*>,
-    private val viewState: GemSettingsViewState,
+    private val viewState: GemCaseViewState,
     position: Position,
 ) : WidgetBase(position, Dimension(PANEL_WIDTH, PANEL_HEIGHT)) {
     private var search = ""
@@ -43,7 +43,7 @@ internal class GemSettingsPanel(
         mouseX: Int,
         mouseY: Int,
     ) {
-        if (viewState.settings) graphics.fill(x, y, x + width, y + height, BACKGROUND)
+        if (viewState.view == GemCaseView.SETTINGS) graphics.fill(x, y, x + width, y + height, BACKGROUND)
     }
 
     override fun renderWidget(
@@ -52,7 +52,7 @@ internal class GemSettingsPanel(
         mouseY: Int,
         partialTick: Float,
     ) {
-        if (!viewState.settings) return
+        if (viewState.view != GemCaseView.SETTINGS) return
         drawViews(graphics)
         val cache = settingsCache()
         val editable = GemSettingsCache.canEdit(screen.menu, container.upgradeContainerId)
@@ -161,10 +161,23 @@ internal class GemSettingsPanel(
     }
 
     private fun drawViews(graphics: GuiGraphics) {
-        graphics.fill(x, y, x + PANEL_WIDTH / 2 - 1, y + VIEW_HEIGHT, BUTTON_COLOR)
-        graphics.fill(x + PANEL_WIDTH / 2 + 1, y, x + PANEL_WIDTH, y + VIEW_HEIGHT, BUTTON_COLOR)
-        graphics.drawString(font, label("storage"), x + PADDING, y + PADDING, FOREGROUND, false)
-        graphics.drawString(font, label("settings"), x + PANEL_WIDTH / 2 + PADDING, y + PADDING, SELECTED, false)
+        val viewWidth = PANEL_WIDTH / VIEW_COUNT
+        listOf(
+            GemCaseView.STORAGE to "storage",
+            GemCaseView.SETTINGS to "settings",
+            GemCaseView.PROCESSING to "processing",
+        ).forEachIndexed { index, (view, name) ->
+            val left = x + index * viewWidth
+            graphics.fill(left, y, left + viewWidth - 1, y + VIEW_HEIGHT, BUTTON_COLOR)
+            graphics.drawString(
+                font,
+                font.plainSubstrByWidth(label(name).string, viewWidth - PADDING * 2),
+                left + PADDING,
+                y + PADDING,
+                if (viewState.view == view) SELECTED else FOREGROUND,
+                false,
+            )
+        }
     }
 
     private fun drawOption(
@@ -264,7 +277,7 @@ internal class GemSettingsPanel(
         button: Int,
     ): Boolean =
         when {
-            !viewState.settings || !visible || !isMouseOver(mouseX, mouseY) -> false
+            viewState.view != GemCaseView.SETTINGS || !visible || !isMouseOver(mouseX, mouseY) -> false
             mouseY - y < VIEW_HEIGHT -> clickView(mouseX)
             else -> {
                 handlePanelClick(mouseX, mouseY - y)
@@ -273,7 +286,13 @@ internal class GemSettingsPanel(
         }
 
     private fun clickView(mouseX: Double): Boolean {
-        viewState.settings = mouseX - x >= PANEL_WIDTH / 2
+        val section = ((mouseX - x) / (PANEL_WIDTH / VIEW_COUNT)).toInt()
+        viewState.view =
+            when {
+                section == 0 -> GemCaseView.STORAGE
+                section == 1 || !container.upgradeWrapper.supportsProcessing -> GemCaseView.SETTINGS
+                else -> GemCaseView.PROCESSING
+            }
         searchFocused = false
         return true
     }
@@ -288,7 +307,7 @@ internal class GemSettingsPanel(
             isRow(localY, DIRECTION_Y) -> selectDirection(mouseX)
             isRow(localY, MODE_Y) && editable -> clickModeOption(mouseX, cache)
             localY in AXIS_Y.toDouble()..(AXIS_Y + OPTION_HEIGHT).toDouble() -> {
-                axis = if (mouseX - x < PANEL_WIDTH / 2) GemFilterAxis.GEM_ID else GemFilterAxis.PURITY
+                axis = if (axis == GemFilterAxis.GEM_ID) GemFilterAxis.PURITY else GemFilterAxis.GEM_ID
                 listOffset = 0
             }
             localY in SEARCH_Y.toDouble()..LIST_Y.toDouble() -> searchFocused = true
@@ -359,7 +378,7 @@ internal class GemSettingsPanel(
         horizontal: Double,
         vertical: Double,
     ): Boolean {
-        val hovered = viewState.settings && visible && isMouseOver(mouseX, mouseY)
+        val hovered = viewState.view == GemCaseView.SETTINGS && visible && isMouseOver(mouseX, mouseY)
         if (hovered) listOffset = maxOf(0, listOffset + if (vertical > 0) -1 else 1)
         return hovered
     }
@@ -369,7 +388,7 @@ internal class GemSettingsPanel(
         modifiers: Int,
     ): Boolean {
         val accepted =
-            viewState.settings &&
+            viewState.view == GemCaseView.SETTINGS &&
                 visible &&
                 searchFocused &&
                 !Character.isISOControl(character) &&
@@ -383,7 +402,11 @@ internal class GemSettingsPanel(
         scanCode: Int,
         modifiers: Int,
     ): Boolean {
-        val accepted = viewState.settings && visible && searchFocused && key != org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE
+        val accepted =
+            viewState.view == GemCaseView.SETTINGS &&
+                visible &&
+                searchFocused &&
+                key != org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE
         if (accepted &&
             key == org.lwjgl.glfw.GLFW.GLFW_KEY_BACKSPACE &&
             search.isNotEmpty()
@@ -393,7 +416,7 @@ internal class GemSettingsPanel(
         return accepted
     }
 
-    override fun isFocused(): Boolean = viewState.settings && searchFocused
+    override fun isFocused(): Boolean = viewState.view == GemCaseView.SETTINGS && searchFocused
 
     override fun setFocused(focused: Boolean) {
         searchFocused = focused
@@ -402,6 +425,7 @@ internal class GemSettingsPanel(
     companion object {
         private const val PANEL_WIDTH = 200
         private const val PANEL_HEIGHT = 205
+        private const val VIEW_COUNT = 3
         private const val PADDING = 4
         private const val VIEW_HEIGHT = 18
         private const val OPTION_HEIGHT = 12
@@ -421,7 +445,3 @@ internal class GemSettingsPanel(
         private const val DISABLED_COLOR = -13421773
     }
 }
-
-internal class GemSettingsViewState(
-    var settings: Boolean = false,
-)

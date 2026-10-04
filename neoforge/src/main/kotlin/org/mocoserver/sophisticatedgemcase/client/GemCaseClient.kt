@@ -19,8 +19,12 @@ internal object GemCaseClient {
     @SubscribeEvent
     fun setup(event: FMLClientSetupEvent) {
         event.enqueueWork {
-            GemNetworking.installClientConsumer(GemPageCache::receive)
+            GemNetworking.installClientConsumer { page ->
+                GemPageCache.receive(page)
+                GemProcessingViewCache.onPageReceived(page)
+            }
             GemNetworking.installSettingsClientConsumer(GemSettingsCache::receive)
+            GemNetworking.installProcessingClientConsumer(GemProcessingCache::receive)
             UpgradeGuiManager.registerTab(GemCaseContainer.TYPE, ::GemCaseTab)
         }
     }

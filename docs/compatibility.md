@@ -45,3 +45,10 @@ KFFのMaven開発用aggregateは配布用JARと異なる。専用サーバーと
 Wrapperのchecksumと既存のcore／buildSrc lockfileを維持する。NeoForge側の内部生成artifactを含めた全依存のchecksum verificationは未導入。coreは連携MOD・関連MODの禁止prefixを追加し、本番classpathとbytecodeを検査する。
 
 Java 21は既存のEclipse Adoptium 21.0.12.1を読み取り利用した。GRADLE_USER_HOMEはこのrepoの`.local/gradle`で、既存cacheのコピーをseedにした。起動環境・ログ・新規ワールドはこのrepoの`.local`へ置き、親packの環境は変更していない。
+
+
+## 工程4で照合した装着・保存境界
+
+Backpacks 3.26.6.2174の[固定BackpackWrapper.java](https://github.com/P3pp3rF1y/SophisticatedBackpacks/blob/fd0e91bb6cd294a778c4bea770b64d71ef09d488/src/main/java/net/p3pp3rf1y/sophisticatedbackpacks/backpack/wrapper/BackpackWrapper.java)では、UpgradeHandlerの通常装着判定が`sophisticatedbackpacks:upgrade`タグを要求する。上下両Gem Caseをdatagenで同タグへ追加する。UpgradeHandlerとInventoryHandlerの保存はcontents sourceをdirtyにする経路で、`setContentsChangeHandler`のbackpack item保存callbackとは異なる。例外テストはtest専用reflectionで固定版の実保存callbackへ接続し、本番コードへreflectionを入れない。
+
+同版[BackpackContainer.java](https://github.com/P3pp3rF1y/SophisticatedBackpacks/blob/fd0e91bb6cd294a778c4bea770b64d71ef09d488/src/main/java/net/p3pp3rf1y/sophisticatedbackpacks/common/gui/BackpackContainer.java)とCore 1.5.2.2343の[StorageContainerMenuBase.java](https://github.com/P3pp3rF1y/SophisticatedCore/blob/f5ec6fb7636a867f87e37cc388077be20221abfe/src/main/java/net/p3pp3rf1y/sophisticatedcore/common/gui/StorageContainerMenuBase.java)を照合した。upgrade itemの置換時はnativeがwrapper・slot・containerを再作成するので、成功後は新しい現物を取り直す。SlotItemHandlerのprotected indexとSlotのglobal indexを混同せず、native handler indexはslotIndex、menu indexはSlot型へ戻して参照する。Slotのx/yは固定MC 1.21.1 artifactではfinalのため、版限定Mutable accessorで加工viewの配置だけを変更する。

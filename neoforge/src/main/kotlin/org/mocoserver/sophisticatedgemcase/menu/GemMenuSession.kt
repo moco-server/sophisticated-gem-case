@@ -1,12 +1,17 @@
 package org.mocoserver.sophisticatedgemcase.menu
 
+import net.minecraft.core.HolderLookup
 import net.minecraft.world.item.ItemStack
 import org.mocoserver.sophisticatedgemcase.core.GemFilterMode
+import org.mocoserver.sophisticatedgemcase.core.GemKey
 import org.mocoserver.sophisticatedgemcase.core.GemTransferSettings
 import org.mocoserver.sophisticatedgemcase.network.GemPage
 import org.mocoserver.sophisticatedgemcase.network.GemPages
 import org.mocoserver.sophisticatedgemcase.network.GemSettingsPage
 import org.mocoserver.sophisticatedgemcase.network.GemSettingsPages
+import org.mocoserver.sophisticatedgemcase.processing.GemRecipeEpoch
+import org.mocoserver.sophisticatedgemcase.storage.GemMaterialState
+import org.mocoserver.sophisticatedgemcase.storage.GemProcessingSettingsState
 import org.mocoserver.sophisticatedgemcase.storage.GemSettingsState
 import org.mocoserver.sophisticatedgemcase.storage.GemStorageState
 import org.mocoserver.sophisticatedgemcase.upgrade.GemCaseUpgradeWrapper
@@ -29,18 +34,36 @@ internal class GemMenuSession(
     var sentRevision: Long = -1
     private var requestTick = Long.MIN_VALUE
     private var requests = 0
+    private var materialsState: GemMaterialState? = null
+    private var processingSettingsState: GemProcessingSettingsState? = null
+    private var recipeEpoch: Long = GemRecipeEpoch.current()
+    var processingOutput: GemKey? = null
+    var previewRevision: Long = -1
 
-    fun refresh(wrapper: GemCaseUpgradeWrapper) {
+    fun refresh(
+        wrapper: GemCaseUpgradeWrapper,
+        registries: HolderLookup.Provider,
+    ) {
         val current = wrapper.snapshot()
         val currentSettings = wrapper.settingsSnapshot()
-        if (state != current || settingsState != currentSettings) {
+        val materials = wrapper.materialsSnapshot(registries)
+        val processingSettings = wrapper.processingSettingsSnapshot()
+        val epoch = GemRecipeEpoch.current()
+        val processingChanged =
+            materialsState != null &&
+                (materialsState != materials || processingSettingsState != processingSettings || recipeEpoch != epoch)
+        if (state != current || settingsState != currentSettings || processingChanged) {
             state = current
             settingsState = currentSettings
             revision++
             pages = GemPages.partition(current)
             settingsPages = GemSettingsPages.partition(currentSettings)
             sentRevision = -1
+            previewRevision = -1
         }
+        materialsState = materials
+        processingSettingsState = processingSettings
+        recipeEpoch = epoch
     }
 
     fun settingsSnapshot(): GemSettingsState = settingsState

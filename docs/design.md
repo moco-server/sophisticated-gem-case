@@ -4,7 +4,7 @@
 
 [Issue #1](https://github.com/moco-server/sophisticated-gem-case/issues/1)を仕様の起点とし、ApotheosisのGem専用収納・管理・純度強化をSophisticated Backpacksへ組み込む。目標は探索中の回収から種類／純度別の整理、拠点との転送、携帯加工をつなぐこと。
 
-このrepoで独立して保守する。Kotlin主体とし、MixinなどJavaとの接続に必要な箇所のみJavaを許容する。下位Gem Caseアップグレード、専用保存、画面操作を実装した。Pickup／Deposit／Restock連携と専用の転送設定・フィルタも実装した。上位加工は未実装で、GUIの実操作は未検収。
+このrepoで独立して保守する。Kotlin主体とし、MixinなどJavaとの接続に必要な箇所のみJavaを許容する。下位Gem Caseアップグレード、専用保存、画面操作を実装した。Pickup／Deposit／Restock連携と専用の転送設定・フィルタも実装した。上位加工・専用材料枠・装着中の上位化も実装し、自動検証と起動・保存往復を確認した。GUIの実操作は未検収。
 
 MOD IDは`sophisticated_gem_case`、表示名は`Sophisticated Gem Case`、packageは`org.mocoserver.sophisticatedgemcase`、Maven groupは`org.mocoserver`、作者は`samunohito`。ライセンスはMITを維持する。
 
@@ -30,7 +30,7 @@ MOD IDは`sophisticated_gem_case`、表示名は`Sophisticated Gem Case`、packa
 
 工程3ではPickupの処理用inventoryへ専用優先の投入を接続し、Deposit／Restockの固定メソッドに専用転送を追加した。専用の二方向は初期OFFで、種類と純度のAND条件を持つ不変フィルタを別componentへ保存する。設定の破損時は原文を保持し、自動転送・設定上書きを止め、正常な個数の手動操作は維持する。通常収納の既存転送にはnativeフィルタを使い、専用転送にはGem側フィルタだけを使う。設定画面は既存タブ内へ置き、個数と設定の同じsession／revisionの同期完了後に編集を許可する。
 
-工程4の上位版、6個の専用材料枠、加工、材料補充、装着中の上位化は未実装。
+工程4では上位版、6個の専用材料枠、加工、通常収納からの材料補充、装着中の上位化を実装した。上下は同じ装着groupを使い、nativeのupgradeタグへ両版を登録する。材料枠は現在の加工レシピの材料だけを受け入れ、レシピ消失後も既存材料は回収できる。加工確定後の保存callbackで状態が変わった場合も旧componentの原文・未存在と通常slotを復元する。
 
 ## 依存境界と接続方針
 
@@ -50,8 +50,8 @@ neoforgeはGemの識別とItemStack変換、登録、保存変換、実インベ
 
 最初の区切りの[実装計画](superpowers/plans/2026-10-02-gem-case-foundation.md)と[検証記録](verification.md)を参照する。依存版の正はcatalog／Gradle properties、公開JARの取得記録は[対応構成](compatibility.md)とする。
 
-工程2の[下位版設計](superpowers/specs/2026-10-02-gem-case-storage-design.md)と[実装計画](superpowers/plans/2026-10-02-gem-case-storage.md)は承認済み。追加component付きGemは通常収納に残す。保存形式、未解決ID、画面操作、暫定入手方法は同仕様を参照する。後続では工程4の加工材料とrecipe、最終見た目を設計する。packへの採用は合意済みだが、今回packを変更・導入しない。
+工程2の[下位版設計](superpowers/specs/2026-10-02-gem-case-storage-design.md)と[実装計画](superpowers/plans/2026-10-02-gem-case-storage.md)は承認済み。追加component付きGemは通常収納に残す。保存形式、未解決ID、画面操作、暫定入手方法は同仕様を参照する。後続では工程5の入手レシピと最終見た目、手動検収を設計する。packへの採用は合意済みだが、今回packを変更・導入しない。
 
 工程3の[連携設計](superpowers/specs/2026-10-03-gem-case-integration-design.md)は2026-10-03に承認済み。[実装計画](superpowers/plans/2026-10-03-gem-case-integration.md)を作成し、保存・回収・専用転送・設定画面・検収の5単位で進める。実装と検証の記録は同計画と[検証記録](verification.md)へ残す。
 
-工程4の[上位加工・材料枠・装着中上位化の設計案](superpowers/specs/2026-10-04-gem-case-processing-design.md)は2026-10-04に承認された。[実装計画](superpowers/plans/2026-10-04-gem-case-processing.md)へ、保存・数量配分・加工確定・変換・画面と検収を割り当てた。作者の実行時recipeを使い、専用6材料枠を優先する。補充ON時のみ同バッグ通常収納から不足分を予約し、全事前検証後に確定する案である。工程4の本番実装は未開始。
+工程4の[上位加工・材料枠・装着中上位化の設計案](superpowers/specs/2026-10-04-gem-case-processing-design.md)は2026-10-04に承認された。[実装計画](superpowers/plans/2026-10-04-gem-case-processing.md)へ、保存・数量配分・加工確定・変換・画面と検収を割り当てた。作者の実行時recipeを使い、専用6材料枠を優先する。補充ON時のみ同バッグ通常収納から不足分を予約し、全事前検証後に確定する。必須140 GameTest、root check、通常JAR内容検査、専用serverの起動・reload・コピーworld保存往復、JEI入りclient起動を確認した。GUI実操作と認証接続は未検収で、実測と限界は検証記録へ残す。

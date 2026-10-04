@@ -2,11 +2,17 @@ package org.mocoserver.sophisticatedgemcase.storage
 
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.world.item.ItemStack
+import net.neoforged.fml.util.thread.SidedThreadGroups
 import net.neoforged.neoforge.items.IItemHandlerModifiable
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper
+import org.mocoserver.sophisticatedgemcase.integration.GemOperationContext
 import org.mocoserver.sophisticatedgemcase.upgrade.GemCaseUpgradeItem
 
-/** 専用材料だけを編集する。simulateは保存callbackを呼ばず、外部のstackを所有しない。 */
+/**
+ * 専用材料だけを編集する。simulateは保存callbackを呼ばず、外部のstackを所有しない。
+ * IItemHandlerの操作と保存照合を同じ境界に置くため、関数数だけを許容する。
+ */
+@Suppress("TooManyFunctions")
 internal class GemMaterialHandler(
     private val storage: IStorageWrapper,
     private val level: ServerLevel,
@@ -27,7 +33,7 @@ internal class GemMaterialHandler(
     override fun isItemValid(
         slot: Int,
         stack: ItemStack,
-    ): Boolean = slot in 0 until slots && !stack.isEmpty && isMaterial(stack.copy())
+    ): Boolean = slot in 0 until slots && mayEdit() && !stack.isEmpty && isMaterial(stack.copy())
 
     override fun insertItem(
         slot: Int,
@@ -35,7 +41,7 @@ internal class GemMaterialHandler(
         simulate: Boolean,
     ): ItemStack {
         require(slot in 0 until slots)
-        val state = snapshot() ?: return stack.copy()
+        val state = snapshot()?.takeIf { mayEdit() } ?: return stack.copy()
         val old = state.stackAt(slot)
         return if (isItemValid(slot, stack) && (old.isEmpty || ItemStack.isSameItemSameComponents(old, stack))) {
             insertMatching(slot, stack, old, state, simulate)
@@ -67,7 +73,7 @@ internal class GemMaterialHandler(
         simulate: Boolean,
     ): ItemStack {
         require(slot in 0 until slots)
-        val state = snapshot() ?: return ItemStack.EMPTY
+        val state = snapshot()?.takeIf { mayEdit() } ?: return ItemStack.EMPTY
         val old = state.stackAt(slot)
         val moved = minOf(old.count, amount.coerceAtLeast(0))
         val updated = replacing(state, slot, old.copyWithCount(old.count - moved))
@@ -96,6 +102,12 @@ internal class GemMaterialHandler(
             GemCaseUpgradeItem.find(storage)?.replaceMaterials(state, updated, level.registryAccess())
         }
     }
+
+    // native slotはsimulateで移動を決めるため、独占中は見込みの受入も拒否する。
+    private fun mayEdit(): Boolean =
+        Thread.currentThread().threadGroup == SidedThreadGroups.SERVER &&
+            GemOperationContext.mayMutate(storage, null) &&
+            GemCaseUpgradeItem.find(storage)?.supportsProcessing == true
 
     private fun snapshot(): GemMaterialContents? =
         GemCaseUpgradeItem

@@ -11,6 +11,8 @@ import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.Dimension
 import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.Position
 import org.mocoserver.sophisticatedgemcase.core.GemKey
 import org.mocoserver.sophisticatedgemcase.menu.GemCaseContainer
+import org.mocoserver.sophisticatedgemcase.menu.GemMaterialSlot
+import org.mocoserver.sophisticatedgemcase.mixin.GemSlotPositionAccessor
 import org.mocoserver.sophisticatedgemcase.network.GemAction
 import org.mocoserver.sophisticatedgemcase.network.GemPageAccumulator
 import org.mocoserver.sophisticatedgemcase.network.GemPageEntry
@@ -21,11 +23,11 @@ import java.util.UUID
 
 /** バッグの既存タブ内で収納一覧と設定画面を切り替える。 */
 internal class GemCaseTab(
-    container: GemCaseContainer,
+    private val container: GemCaseContainer,
     position: Position,
     screen: StorageScreenBase<*>,
 ) : UpgradeSettingsTab<GemCaseContainer>(container, position, screen, label("title"), label("help")) {
-    private val viewState = GemSettingsViewState()
+    private val viewState = GemCaseViewState(::updateMaterialSlots)
     private val panel =
         addHideableChild(GemCasePanel(container, Position(x + PANEL_OFFSET_X, y + PANEL_OFFSET_Y), screen, viewState))
 
@@ -35,13 +37,60 @@ internal class GemCaseTab(
             GemSettingsPanel(container, screen, viewState, Position(x + PANEL_OFFSET_X, y + PANEL_OFFSET_Y)),
         )
 
-    override fun moveSlotsToTab() = Unit
+    @Suppress("unused")
+    private val processingPanel =
+        addHideableChild(
+            GemProcessingPanel(container, screen, viewState, Position(x + PANEL_OFFSET_X, y + PANEL_OFFSET_Y)),
+        )
+
+    override fun moveSlotsToTab() = updateMaterialSlots()
+
+    override fun onTabClose() {
+        super.onTabClose()
+        container.processingViewOpen = false
+        container.slots.filterIsInstance<GemMaterialSlot>().forEach { it.processingVisible = false }
+        GemProcessingViewCache.setProcessingView(screen.menu, container.upgradeContainerId, false)
+    }
 
     override fun slotIsNotCoveredAt(
         slot: net.minecraft.world.inventory.Slot,
         mouseX: Double,
         mouseY: Double,
-    ): Boolean = !isOpen || !panel.isMouseOver(mouseX, mouseY)
+    ): Boolean {
+        if (!isOpen) return true
+        val processingOpen =
+            container.upgradeWrapper.supportsProcessing && isOpen && viewState.view == GemCaseView.PROCESSING
+        return when {
+            slot is GemMaterialSlot -> processingOpen && slot.processingVisible
+            processingOpen -> !processingPanel.isMouseOver(mouseX, mouseY)
+            else -> !panel.isMouseOver(mouseX, mouseY) && !settingsPanel.isMouseOver(mouseX, mouseY)
+        }
+    }
+
+    private fun updateMaterialSlots() {
+        val visible =
+            container.upgradeWrapper.supportsProcessing && isOpen && viewState.view == GemCaseView.PROCESSING
+        container.processingViewOpen = visible
+        val xOrigin = screen.guiLeft
+        val yOrigin = screen.guiTop
+        container.slots.filterIsInstance<GemMaterialSlot>().forEachIndexed { index, slot ->
+            slot.processingVisible = visible
+            // MC 1.21.1のSlotへMixinが実行時にinterfaceを追加する。native位置変更はGameTestで確認する。
+            @Suppress("UnsafeCast")
+            val positionAccessor = slot as GemSlotPositionAccessor
+            if (visible) {
+                val slotX = panel.x - xOrigin + MATERIAL_SLOT_START_X + index % MATERIAL_COLUMNS * SLOT_STEP
+                val slotY = panel.y - yOrigin + MATERIAL_SLOT_START_Y + index / MATERIAL_COLUMNS * SLOT_STEP
+                positionAccessor.gemCaseSetX(slotX)
+                positionAccessor.gemCaseSetY(slotY)
+            } else {
+                positionAccessor.gemCaseSetX(HIDDEN_SLOT_X)
+                positionAccessor.gemCaseSetY(0)
+            }
+        }
+        GemProcessingViewCache.setProcessingView(screen.menu, container.upgradeContainerId, visible)
+        GemProcessingCache.updateMaterialSlots(screen.menu, container.upgradeContainerId)
+    }
 }
 
 private const val PANEL_OFFSET_X = 3
@@ -63,6 +112,11 @@ private const val FOREGROUND = -1
 private const val SELECTED = -256
 private const val UNRESOLVED = -21846
 private const val BUTTON_COLOR = -11184811
+private const val MATERIAL_SLOT_START_X = 12
+private const val MATERIAL_SLOT_START_Y = 52
+private const val MATERIAL_COLUMNS = 3
+private const val SLOT_STEP = 18
+private const val HIDDEN_SLOT_X = -1000
 
 private fun label(key: String): Component = Component.translatable("sophisticated_gem_case.gui.$key")
 
@@ -72,7 +126,7 @@ private class GemCasePanel(
     private val container: GemCaseContainer,
     position: Position,
     private val screen: StorageScreenBase<*>,
-    private val viewState: GemSettingsViewState,
+    private val viewState: GemCaseViewState,
 ) : WidgetBase(position, Dimension(PANEL_WIDTH, PANEL_HEIGHT)) {
     private var search = ""
     private var searchFocused = false
@@ -98,7 +152,7 @@ private class GemCasePanel(
         mouseX: Int,
         mouseY: Int,
     ) {
-        if (!viewState.settings) graphics.fill(x, y, x + width, y + height, BACKGROUND)
+        if (viewState.view == GemCaseView.STORAGE) graphics.fill(x, y, x + width, y + height, BACKGROUND)
     }
 
     override fun renderWidget(
@@ -107,8 +161,8 @@ private class GemCasePanel(
         mouseY: Int,
         partialTick: Float,
     ) {
-        if (viewState.settings) return
-        drawViews(graphics)
+        if (viewState.view != GemCaseView.STORAGE) return
+        drawViews(graphics, container.upgradeWrapper.supportsProcessing)
         refreshGroups()
         graphics.drawString(
             font,
@@ -139,11 +193,37 @@ private class GemCasePanel(
         )
     }
 
-    private fun drawViews(graphics: GuiGraphics) {
-        graphics.fill(x, y, x + PANEL_WIDTH / 2 - 1, y + VIEW_HEIGHT, BUTTON_COLOR)
-        graphics.fill(x + PANEL_WIDTH / 2 + 1, y, x + PANEL_WIDTH, y + VIEW_HEIGHT, BUTTON_COLOR)
-        graphics.drawString(font, label("storage"), x + PADDING, y + PADDING, SELECTED, false)
-        graphics.drawString(font, label("settings"), x + PANEL_WIDTH / 2 + PADDING, y + PADDING, FOREGROUND, false)
+    private fun drawViews(
+        graphics: GuiGraphics,
+        supportsProcessing: Boolean,
+    ) {
+        drawView(graphics, GemCaseView.STORAGE, 0, label("storage"), true)
+        drawView(graphics, GemCaseView.SETTINGS, VIEW_WIDTH, label("settings"), true)
+        drawView(graphics, GemCaseView.PROCESSING, VIEW_WIDTH * 2, label("processing"), supportsProcessing)
+    }
+
+    private fun drawView(
+        graphics: GuiGraphics,
+        view: GemCaseView,
+        offset: Int,
+        text: Component,
+        enabled: Boolean,
+    ) {
+        graphics.fill(x + offset, y, x + offset + VIEW_WIDTH - 1, y + VIEW_HEIGHT, BUTTON_COLOR)
+        graphics.drawString(
+            font,
+            font.plainSubstrByWidth(text.string, VIEW_WIDTH - PADDING * 2),
+            x + offset + PADDING,
+            y + PADDING,
+            if (viewState.view == view) {
+                SELECTED
+            } else if (enabled) {
+                FOREGROUND
+            } else {
+                UNRESOLVED
+            },
+            false,
+        )
     }
 
     private fun refreshGroups() {
@@ -246,12 +326,17 @@ private class GemCasePanel(
         when {
             !visible || !isMouseOver(mouseX, mouseY) -> false
             mouseY - y < VIEW_HEIGHT -> selectView(mouseX)
-            viewState.settings -> false
+            viewState.view != GemCaseView.STORAGE -> false
             else -> handleStorageClick(mouseX, mouseY, button)
         }
 
     private fun selectView(mouseX: Double): Boolean {
-        viewState.settings = mouseX - x >= PANEL_WIDTH / 2
+        viewState.view =
+            when ((mouseX - x).toInt() / VIEW_WIDTH) {
+                0 -> GemCaseView.STORAGE
+                1 -> GemCaseView.SETTINGS
+                else -> if (container.upgradeWrapper.supportsProcessing) GemCaseView.PROCESSING else GemCaseView.STORAGE
+            }
         searchFocused = false
         return true
     }
@@ -305,7 +390,7 @@ private class GemCasePanel(
         horizontal: Double,
         vertical: Double,
     ): Boolean {
-        val hovered = !viewState.settings && visible && isMouseOver(mouseX, mouseY)
+        val hovered = viewState.view == GemCaseView.STORAGE && visible && isMouseOver(mouseX, mouseY)
         if (hovered) {
             val delta = if (vertical > 0) -1 else 1
             if (mouseY - y <
@@ -324,7 +409,7 @@ private class GemCasePanel(
         modifiers: Int,
     ): Boolean {
         val accepted =
-            !viewState.settings &&
+            viewState.view == GemCaseView.STORAGE &&
                 visible &&
                 searchFocused &&
                 !Character.isISOControl(character) &&
@@ -338,7 +423,11 @@ private class GemCasePanel(
         scanCode: Int,
         modifiers: Int,
     ): Boolean {
-        val accepted = !viewState.settings && visible && searchFocused && key != org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE
+        val accepted =
+            viewState.view == GemCaseView.STORAGE &&
+                visible &&
+                searchFocused &&
+                key != org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE
         if (accepted &&
             key == org.lwjgl.glfw.GLFW.GLFW_KEY_BACKSPACE &&
             search.isNotEmpty()
@@ -348,9 +437,13 @@ private class GemCasePanel(
         return accepted
     }
 
-    override fun isFocused(): Boolean = !viewState.settings && searchFocused
+    override fun isFocused(): Boolean = viewState.view == GemCaseView.STORAGE && searchFocused
 
     override fun setFocused(focused: Boolean) {
         searchFocused = focused
+    }
+
+    private companion object {
+        const val VIEW_WIDTH = PANEL_WIDTH / 3
     }
 }
