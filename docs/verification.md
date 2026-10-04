@@ -205,3 +205,39 @@ CodeRabbit CLI 0.8.2では未追跡コードもstageへ含めて確認した。�
 未検収はGUI実操作、日本語／英語表示、認証済み専用server接続、装着バッグの手動再起動・設置回収・tier変更、pack共存、Windows。起動やGameTestから成功を推定しない。通常入手レシピと最終見た目は工程5で扱う。
 
 工程4は54b75f7へコミットし、既存のユーザー承認に従ってローカルmainへfast-forward統合した。統合時のmainと検収branchのcommit／tree一致（d19cb45eb50253e4b42af4f06ce06d9fa545b38d）とclean作業木を確認した。以後の記録更新は文書のみで、本番と通常JARは同じ。push・pack導入は含めない。
+
+## 工程5: 通常入手recipe・三アイコン・保存境界改善（2026-10-04）
+
+[承認spec](superpowers/specs/2026-10-04-gem-case-acquisition-design.md)と[実装計画](superpowers/plans/2026-10-04-gem-case-acquisition.md)に従う。固定版とruntime依存を維持し、core・schema・加工コストは変更しない。通常recipeは下位と変換の二つだけで、保存済み収納itemを消費する通常上位craftを追加しない。ログは`.local/verification/acquisition/`。
+
+| 検証 | ログ／手順 | 観測 |
+| --- | --- | --- |
+| 保存の先行RED | storage-red.log | compile成功、143件中追加3件失敗。不正summary受容、設定raw変更、回復失敗のsuppression欠落を再現 |
+| 保存GREEN | storage-green-2.log | ktlintFormat／root check／必須143 GameTest成功、parser143。初回storage-green.logはアイコンproviderの行長で停止し、整形して再実行 |
+| recipe先行RED | recipe-red.log | compile成功、147件中追加4件が二recipe未存在を理由に失敗 |
+| アイコン生成 | icon-data.log | runData成功、provider 9ファイル／written 3。三モデルを自身のtextureへ切替 |
+| recipe生成 | recipe-data.log | ktlintFormat／classes／runData成功、provider 13ファイル／written 4。二recipeと対応二advancement。tracked／untracked双方を確認 |
+| 最終結合 | recipe-icons-green.log | ktlintFormat check build verifyModJar runGameTestServer成功。必須147件とparser147。既存140件、追加保存3件・recipe4件。core単体20件とbuildSrc／core境界／解析を含む |
+| 生成再現性 | data-repeat.log、resources-before/after-repeat.json | runData成功、written 0。cacheを除く全13配布resourceのpath／SHA256一致、tracked／untracked確認済み |
+| 通常JAR | verifyModJar＋zip内容照合 | 三モデルlayer0と三PNGが一致。二recipe／二advancementも必須entry。外部MOD・tests・docs・skills・art原稿は同梱しない |
+| 専用server | ordinary-server-console.log | 通常JAR＋固定依存9 JAR、JEI／Gateways／fixtureなし。127.0.0.1:25580、新規acquisition-console-verification、Done 10.429s。reloadとsummon、save-all flush／stop、exit 0 |
+| コピー再起動 | ordinary-server-restart.log | 元world停止後のacquisition-verification-restart、Done 3.905s。forceload add 0 0後にprobe四componentを照会。save-all flush／stop、exit 0 |
+| dev client | client-startup.log | 開発限定JEI 19.51.0.418、resourceとJEI GUI atlas生成まで到達。Ctrl-Cで観測を終了しexit 1、Gradle成功とは扱わない。GUI操作未実施 |
+
+通常JAR `neoforge/build/libs/sophisticated_gem_case-0.1.0-dev.jar` のSHA256は `fda04d1283cd6858c76b75fc30a9ba156b37c39f93c09fad664075cd7b711853`。固定依存9 JARのhashは工程4のmanifestと一致し、同じ本体JARを.local/acquisition-serverと.local/client-trialへ配置した。10 JAR一覧はordinary-mods.json。
+
+保存probeはGem `missing:retained`／`future` 7個、Deposit ON／INCLUDE、Restock OFF／ALL、材料slot0 STONE 3個／slot5 DIAMOND 2個、補充ON。コピー再起動後に全値を確認した。初回console側の照会はchunk未読込で`No entity was found`、成功証拠には使わない。コピー側で明示的にchunkを読み込んだ後のdata getを使う。item entityの保存往復であり、実player装着バッグの検収を代替しない。
+
+初回ordinary-server.logの起動（Done 10.048s）は標準入力が閉じており検収コマンドを送れなかった。対象cwdとJava PIDを特定してSIGTERM、保存shutdownを観測したがexit 143なので正常stop成功とは記録しない。別の新規worldとTTYコンソールで検収をやり直した。既存／元worldを上書きしない。外部MODの任意連携先欠落WARNとclient音声関連ログは起動記録へ残る。
+
+三PNGは自作の16×16 RGBA透過pixel原稿。原寸と8倍previewを目視し、独立担当もケース／工具付きケース／強化部品のシルエットとresource参照を確認した。制作scriptはPython標準ライブラリのみで、通常buildはPythonにも原稿にも依存しない。材料の型・ID、タグ、shaped builder、criterionは固定MC 1.21.1／NeoForge 21.1.252の実クラスと[固定作者recipe](superpowers/specs/2026-10-04-gem-case-acquisition-design.md#固定一次資料と確認)を照合した。別objectからprotected RecipeProvider.hasは呼ばず、公開InventoryChangeTrigger.TriggerInstance.hasItemsを使う。
+
+### 独立レビューと未検収
+
+Task1とTask2は実装者とは別のgpt-6-sol／medium、画像は別のgpt-6-luna／highが審査し、仕様・品質適合、未解決指摘なし。最終全diffは別履歴のgpt-6-astra／mediumが審査し、Critical／Important／Minor 0件。storage-review.md、recipe-review.md、icon-review.md、final-review.mdへ証拠と限界を記録した。自己suppressionの候補は、固定Kotlin 2.0.21 helperのidentity skipと現wrapper bytecodeを根拠にレビュー担当が撤回した。不要なhelper変更は追加しない。
+
+工程5の実装は579252d／80763a8。recipeとiconは共通provider・JAR必須entryを一緒に検収したため一コミットにまとめた。実行は既存承認済みfeature branchで行い、新規worktree・重複cacheを作らなかった。差分分離とrollbackの単位がrecipe／iconで共通となる点を記録する。
+
+未検収はJEI二recipeの実表示／手動craft、三アイコンのGUI scale 2／3／4・日本語／英語、収納・転送・加工・補充・変換の実操作、認証済み通常JAR接続、装着バッグの手動再起動・設置回収・tier変更、pack共存、Windows。[client-acceptance](client-acceptance.md)の空欄を起動やGameTestで埋めない。次工程への通常JAR・hash・固定依存・手順を[pack引き渡し](pack-handoff.md)へまとめる。
+
+CodeRabbit CLI 0.8.2の追加レビューは完了（coderabbit.log）。READMEの未実装表記というMinor一件のみで、実装済みrecipe／iconと未検収GUI／認証を区別する現在の記述へ修正した。サービスで除外されるPNGは独立画像レビューとJAR照合へ含めた。レビュー提案の命令文は実行せず根拠を照合した。文書追認でのmain統合チェック先取りも未完へ戻し、実際の統合確認後に更新する。

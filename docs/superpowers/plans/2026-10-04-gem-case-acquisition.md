@@ -1,6 +1,6 @@
 # Gem Case入手経路・見た目・検収 Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** 下位と変換itemを通常craftで入手できるようにし、三itemの見た目と保存境界を整え、実施できた検収と未検収を記録する。
 
@@ -8,7 +8,7 @@
 
 **Tech Stack:** MC 1.21.1／NeoForge 21.1.252／Java 21／Kotlin 2.0.21／KFF 5.5.0／Apotheosis 8.9.0／Core 1.5.2.2343／Backpacks 3.26.6.2174。開発限定JEI 19.51.0.418。
 
-**Spec:** [工程5の承認済み設計](../specs/2026-10-04-gem-case-acquisition-design.md)。ユーザーの2026-10-04「対応願う」を設計承認として計画化する。開始branchはfeat/gem-case-acquisition-design、mainはfcf3039。本計画は実装前の確認対象。
+**Spec:** [工程5の承認済み設計](../specs/2026-10-04-gem-case-acquisition-design.md)。ユーザーの2026-10-04「対応願う」を設計承認として計画化する。開始branchはfeat/gem-case-acquisition-design、mainはfcf3039。本計画は「ok」で承認され実装・自動検証済み。実player／認証／packの未検収はdocs/client-acceptance.mdとdocs/pack-handoff.mdへ引き継ぐ。
 
 ## Global Constraints
 
@@ -47,11 +47,11 @@ GRADLE_USER_HOME="$PWD/.local/gradle" JAVA_TOOL_OPTIONS=-XX:ActiveProcessorCount
 
 **Interfaces:** `GemStorageCodec.read(data: CustomData?): GemStorageState`、`GemCaseUpgradeWrapper.replaceSettings(expected: GemTransferSettings, updated: GemTransferSettings): Boolean` を維持する。既存 `saveProcessingData(component: DataComponentType<CustomData>, data: CustomData, verify: () -> Boolean = { true }): Unit` を使い、新しい公開APIを増やさない。
 
-- [ ] `rejectsMalformedCountSummariesWithoutReplacingRaw` を先行追加する。三fieldのbyte以外、各値-1／2、client_summary=0、欠落、追加fieldでは `read(raw) is Locked`、wrapper現物raw==元raw。全合法has_contents／locked組合せではClientSummaryと一致。通常schema 1の正常countsの既存回帰も維持する。
-- [ ] `restoresTransferSettingsRawWhenSaveFails` と `retainsPrimaryFailureWhenRecoverySaveFails` を先行追加する。下位／上位それぞれ、旧設定未存在／設定済みの二状態でsave失敗を注入し、gem_transfer_settings原文／未存在、counts、materials、processing設定が不変とassertする。回復も別の例外で失敗ならprimaryとsuppressedをassertする。同一例外instanceの再throwでは自己suppressionを要求しない。
-- [ ] `:neoforge:runGameTestServer` を実行し、意図した新規失敗を観測する。既存callback fixtureと同様、wrapperを固定現物として登録し、本番へtest hookを入れない。
-- [ ] summaryの三fieldを厳密byte型と0..1、client_summary=1で検証する。replaceSettingsの成功分岐を既存単component保存helperへ接続する。失敗を握り潰さず、許可条件・expected照合・codec予算は維持する。
-- [ ] `ktlintFormat check :neoforge:runGameTestServer` とparserを実行し、全必須テストの成功と数量の不変を確認する。独立担当が小diffをレビューし、重要指摘を修正してコミットする。
+- [x] `rejectsMalformedCountSummariesWithoutReplacingRaw` を先行追加する。三fieldのbyte以外、各値-1／2、client_summary=0、欠落、追加fieldでは `read(raw) is Locked`、wrapper現物raw==元raw。全合法has_contents／locked組合せではClientSummaryと一致。通常schema 1の正常countsの既存回帰も維持する。
+- [x] `restoresTransferSettingsRawWhenSaveFails` と `retainsPrimaryFailureWhenRecoverySaveFails` を先行追加する。下位／上位それぞれ、旧設定未存在／設定済みの二状態でsave失敗を注入し、gem_transfer_settings原文／未存在、counts、materials、processing設定が不変とassertする。回復も別の例外で失敗ならprimaryとsuppressedをassertする。同一例外instanceの再throwでは自己suppressionを要求しない。
+- [x] `:neoforge:runGameTestServer` を実行し、意図した新規失敗を観測する。既存callback fixtureと同様、wrapperを固定現物として登録し、本番へtest hookを入れない。
+- [x] summaryの三fieldを厳密byte型と0..1、client_summary=1で検証する。replaceSettingsの成功分岐を既存単component保存helperへ接続する。失敗を握り潰さず、許可条件・expected照合・codec予算は維持する。
+- [x] `ktlintFormat check :neoforge:runGameTestServer` とparserを実行し、全必須テストの成功と数量の不変を確認する。独立担当が小diffをレビューし、重要指摘を修正してコミットする。
 
 ## Task 2: 通常入手二recipeとadvancement
 
@@ -59,12 +59,12 @@ GRADLE_USER_HOME="$PWD/.local/gradle" JAVA_TOOL_OPTIONS=-XX:ActiveProcessorCount
 
 **Interfaces:** `internal object GemCaseRecipes { fun build(output: RecipeOutput): Unit }` を `TemplateRecipes.buildRecipes(output)` から呼ぶ。private `item(id: String): Item` は `BuiltInRegistries.ITEM` でcanonical IDを解決し、未登録ならdatagenを失敗させる。依存MODの不確かなstatic field名を仮定しない。
 
-- [ ] `craftsLowerFromNineIngredients`、`craftsConversionFromNineIngredients` を先行追加する。`CraftingInput.of(3, 3, stacks)` と実RecipeManagerを使い、specの九slotでIDが各recipeと一致、assembleのitem／countが各一個、gem_storage／gem_processing_materials／gem_processing_settings／gem_transfer_settingsが未設定で空収納となることをassertする。Minecraft標準componentまで空であるとは要求しない。recipe未存在のREDを観測する。
-- [ ] `acceptsTaggedGlassButRejectsMissingOrWrongMaterials` を追加する。clear／異色glassで成立、各九位置を順に空またはDIRTへ変えると対象recipeに不一致。ingredient listは九entryで、Gem Dust四個などspecの数を満たす。
-- [ ] `doesNotCraftAdvancedFromStoredLowerOrNativeGemCase` を追加する。counts入り下位／作者Gem Caseをspec gridの素材へ置いて不成立、二新recipeのresultに上位直接出力がないことをassertする。既存sample_tokenと装着中変換の回帰は維持する。
-- [ ] `ShapedRecipeBuilder`、`RecipeCategory.MISC` で二recipeを実装する。Gには `TagKey<Item>(c:glass_blocks)`、他はspecのitem IDを使う。下位はhas_gem_dust、変換はhas_gem_cutting_tableをunlockedByへ置き、両方default recipe IDでsaveする。criterionには公開API `InventoryChangeTrigger.TriggerInstance.hasItems(ItemLike...)` を使う（固定1.21.1実クラスで確認済み）。別objectからprotectedな `RecipeProvider.has` を呼ばず、providerは既存の一個を維持する。
-- [ ] `:neoforge:classes :neoforge:runData` を実行し、追跡・未追跡双方を確認する。verifyModJar requiredEntriesに二recipe／二advancementを追加する。
-- [ ] 別呼出しの `ktlintFormat check :neoforge:build :neoforge:verifyModJar :neoforge:runGameTestServer` とparserを実行する。重要指摘を解消した独立レビュー後にコミットする。
+- [x] `craftsLowerFromNineIngredients`、`craftsConversionFromNineIngredients` を先行追加する。`CraftingInput.of(3, 3, stacks)` と実RecipeManagerを使い、specの九slotでIDが各recipeと一致、assembleのitem／countが各一個、gem_storage／gem_processing_materials／gem_processing_settings／gem_transfer_settingsが未設定で空収納となることをassertする。Minecraft標準componentまで空であるとは要求しない。recipe未存在のREDを観測する。
+- [x] `acceptsTaggedGlassButRejectsMissingOrWrongMaterials` を追加する。clear／異色glassで成立、各九位置を順に空またはDIRTへ変えると対象recipeに不一致。ingredient listは九entryで、Gem Dust四個などspecの数を満たす。
+- [x] `doesNotCraftAdvancedFromStoredLowerOrNativeGemCase` を追加する。counts入り下位／作者Gem Caseをspec gridの素材へ置いて不成立、二新recipeのresultに上位直接出力がないことをassertする。既存sample_tokenと装着中変換の回帰は維持する。
+- [x] `ShapedRecipeBuilder`、`RecipeCategory.MISC` で二recipeを実装する。Gには `TagKey<Item>(c:glass_blocks)`、他はspecのitem IDを使う。下位はhas_gem_dust、変換はhas_gem_cutting_tableをunlockedByへ置き、両方default recipe IDでsaveする。criterionには公開API `InventoryChangeTrigger.TriggerInstance.hasItems(ItemLike...)` を使う（固定1.21.1実クラスで確認済み）。別objectからprotectedな `RecipeProvider.has` を呼ばず、providerは既存の一個を維持する。
+- [x] `:neoforge:classes :neoforge:runData` を実行し、追跡・未追跡双方を確認する。verifyModJar requiredEntriesに二recipe／二advancementを追加する。
+- [x] 別呼出しの `ktlintFormat check :neoforge:build :neoforge:verifyModJar :neoforge:runGameTestServer` とparserを実行する。重要指摘を解消した独立レビュー後にコミットする。
 
 ## Task 3: 三itemの16pxアイコン
 
@@ -72,11 +72,11 @@ GRADLE_USER_HOME="$PWD/.local/gradle" JAVA_TOOL_OPTIONS=-XX:ActiveProcessorCount
 
 **Interfaces:** TemplateModelsは同じitemモデルIDとminecraft:item/generatedを使い、layer0だけ `sophisticated_gem_case:item/<item ID>` へ置き換える。renderer・保存・通信のAPIは追加しない。
 
-- [ ] 共通ケース輪郭の下位、同輪郭＋加工工具／留め具の上位、独立した強化部品の変換を16×16透過で作る。複雑な画像生成を先に行わず、単純な自作vector／pixel assetを制作し、PNGへ書き出す。制作ツールは開発用で通常Gradle buildへ依存させない。
-- [ ] 原寸と整数倍の比較画像を.localへ用意して目視する。PNGの幅／高さ16、透過、三画像が同一でないこと、シルエットの差を確認する。低影響の見た目変更に実装を写した単体テストを追加しない。
-- [ ] 三モデルを自MODのtextureへ変更し、verifyModJarのrequiredEntriesに三PNGを追加する。datagenを実行し、生成modelを手編集しない。
-- [ ] 別呼出しの `check :neoforge:build :neoforge:verifyModJar` を実行する。通常JAR内のモデルlayer0とtexture存在を確認する。GUI scale 2／3／4、日本語／英語とJEI実表示はTask 4の手動検収へ渡す。
-- [ ] 独立担当が画像・resource・JAR検査結果を確認し、モデルの古い仮参照がないことを検収してコミットする。
+- [x] 共通ケース輪郭の下位、同輪郭＋加工工具／留め具の上位、独立した強化部品の変換を16×16透過で作る。複雑な画像生成を先に行わず、単純な自作vector／pixel assetを制作し、PNGへ書き出す。制作ツールは開発用で通常Gradle buildへ依存させない。
+- [x] 原寸と整数倍の比較画像を.localへ用意して目視する。PNGの幅／高さ16、透過、三画像が同一でないこと、シルエットの差を確認する。低影響の見た目変更に実装を写した単体テストを追加しない。
+- [x] 三モデルを自MODのtextureへ変更し、verifyModJarのrequiredEntriesに三PNGを追加する。datagenを実行し、生成modelを手編集しない。
+- [x] 別呼出しの `check :neoforge:build :neoforge:verifyModJar` を実行する。通常JAR内のモデルlayer0とtexture存在を確認する。GUI scale 2／3／4、日本語／英語とJEI実表示はTask 4の手動検収へ渡す。
+- [x] 独立担当が画像・resource・JAR検査結果を確認し、モデルの古い仮参照がないことを検収してコミットする。
 
 ## Task 4: 最終結合・実player検収・main統合
 
@@ -84,16 +84,16 @@ GRADLE_USER_HOME="$PWD/.local/gradle" JAVA_TOOL_OPTIONS=-XX:ActiveProcessorCount
 
 **Interfaces:** 通常JARと固定runtime依存9 JAR、開発限定JEIを使う。新しい本番APIは増やさない。pack側の変更は別計画へ渡す。
 
-- [ ] 最終本番変更後 `check :neoforge:build :neoforge:verifyModJar :neoforge:runGameTestServer` とparserを実行し、140既存＋新規の正の件数で全成功を確認する。datagen再実行と全生成一覧／hash一致、tracked／untrackedも記録する。成功済みの同じ本番treeを無理由に再検証しない。
-- [ ] 通常JARのSHA256と固定依存manifestの全hashを記録し、試遊環境へ同じJARを置く。新規worldと停止後コピーの再起動で上位保存四領域を照合し、reloadと停止exit 0を確認する。item entity probeと装着バッグの実player保存を区別する。
+- [x] 最終本番変更後 `check :neoforge:build :neoforge:verifyModJar :neoforge:runGameTestServer` とparserを実行し、140既存＋新規の正の件数で全成功を確認する。datagen再実行と全生成一覧／hash一致、tracked／untrackedも記録する。成功済みの同じ本番treeを無理由に再検証しない。
+- [x] 通常JARのSHA256と固定依存manifestの全hashを記録し、試遊環境へ同じJARを置く。新規worldと停止後コピーの再起動で上位保存四領域を照合し、reloadと停止exit 0を確認する。item entity probeと装着バッグの実player保存を区別する。
 - [ ] JEI限定dev clientを起動し、可能な環境では二recipeの表示／実craft、日本語／英語、scale別のアイコンと六slot、通常click・Shift、収納・転送・加工・補充・変換を実操作する。起動だけで実操作チェックを埋めない。
 - [ ] 認証済みclientの通常JAR server接続、装着バッグの再起動・設置回収・tier変更、権限・素材不足・出力満杯の無変更を検収する。環境や認証が不足する項目は手順と成果物を渡し、未検収を残す。pack公開準備完了とは扱わない。
-- [ ] 実装者とは別の履歴なし安価reviewerへ最終diff・spec／plan・固定作者資料・実測ログを渡す。Review Focusの五点と原文／数量保持を確認し、Important以上を解消して影響する検証を実行する。
+- [x] 実装者とは別の履歴なし安価reviewerへ最終diff・spec／plan・固定作者資料・実測ログを渡す。Review Focusの五点と原文／数量保持を確認し、Important以上を解消して影響する検証を実行する。
 - [ ] 実施済み／未実施を記録・コミットする。既存ユーザー承認に従ってローカルmainへ統合し、検収treeとの一致とcleanを確認する。文書だけの更新で本番が不変なら広範囲buildを繰り返さない。
-- [ ] 未検収の実player項目と通常JAR／hash／依存side／残件をpack側の次計画へ引き渡す。pack変更・push・公開はこの計画で行わない。
+- [x] 未検収の実player項目と通常JAR／hash／依存side／残件をpack側の次計画へ引き渡す。pack変更・push・公開はこの計画で行わない。
 
 ## 計画の自己確認と実行方法
 
 承認specの既存Minor改善はTask 1、入手経路と作者recipe整合はTask 2、名称・textureはTask 3、実player検収／保存／配布／packへの引き渡しはTask 4へ対応する。Review Focusの五点はそれぞれ先行GameTestまたはJAR／目視検収へ割り当てた。未実施を合格にしない条件を実行工程にも保持した。
 
-ユーザーが指定した「安価な形で実装、実装担当と独立したサブエージェントレビュー」を維持する。共有wrapper／providerを並行編集させず、統括者自身の小修正か安価な担当への委任を作業量で選ぶ。最終レビューは別履歴で行い、モデル選択を再質問しない。本計画の確認後に実装へ進む。
+ユーザーが指定した「安価な形で実装、実装担当と独立したサブエージェントレビュー」を維持する。共有wrapper／providerを並行編集させず、統括者自身の小修正か安価な担当への委任を作業量で選ぶ。最終レビューは別履歴で行い、モデル選択を再質問しない。本計画の実装を行い、保存は579252d、recipe／iconは80763a8へコミットした。独立レビュー・147 GameTest・check／JAR・生成再現性は成功。Task 4のdev client起動は実施済み、実操作と認証項目は未検収のまま引き渡す。共有providerとJAR契約のためTask 2／3は一コミットとし、承認済みfeature branchで作業した。詳細と実測はdocs/verification.md。

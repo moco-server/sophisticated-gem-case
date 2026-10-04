@@ -1,6 +1,6 @@
 # Gem Case工程5: 入手経路・見た目・手動検収の設計案
 
-状態: 2026-10-04の「対応願う」で設計承認。工程4は54b75f7でローカルmainへ統合済み。[実装計画](../plans/2026-10-04-gem-case-acquisition.md)を作成し、計画確認待ち。レシピ・見た目はまだ未実装。pack導入は別変更。
+状態: 2026-10-04の「対応願う」で設計承認。工程4は54b75f7でローカルmainへ統合済み。[実装計画](../plans/2026-10-04-gem-case-acquisition.md)を作成し、計画も「ok」で承認。レシピ・見た目・保存改善は実装／自動検証済み。実player操作は未検収、pack導入は別変更。
 
 ## 目的と区切り
 
@@ -87,6 +87,6 @@ Apotheosis 8.9.0配布JARの`data/apotheosis/recipe/gem_case.json`／`gem_cuttin
 - [作者Gem Cutting Table recipe](https://github.com/Shadows-of-Fire/Apotheosis/blob/7dd7cec26830074f1745529eb8f1f533092733d0/src/generated/resources/data/apotheosis/recipe/gem_cutting_table.json)
 - [固定版のUpgrade Base登録](https://github.com/P3pp3rF1y/SophisticatedBackpacks/blob/fd0e91bb6cd294a778c4bea770b64d71ef09d488/src/main/java/net/p3pp3rf1y/sophisticatedbackpacks/init/ModItems.java)
 
-自己確認: 二recipeは3×3の九入力で成立し、既存収納itemを消費しない。coreへゲーム型を持ち込まず、新しい保存形式・serializerは不要。recipeのbalanceと見た目の方針は承認済み、完成アイコンと認証接続・pack共存は未検収として区別する。実装計画を作成し、確認後に着手する。
+自己確認: 二recipeは3×3の九入力で成立し、既存収納itemを消費しない。coreへゲーム型を持ち込まず、新しい保存形式・serializerは不要。recipeのbalanceと見た目の方針は承認済み、完成アイコンは原寸／整数倍の原稿レビュー済み、実clientのscale別表示と認証接続・pack共存は未検収として区別する。実装・自動検証の結果は検証記録へ残した。
 
 独立書類レビュー: 実装担当とは別の履歴なしgpt-6-luna / highが二recipeの九入力、固定配布JARの材料・hash、componentを失うcraft経路の有無、未承認／未検収の区別を確認し、指摘なし。本番コードの実装レビューとは分ける。
