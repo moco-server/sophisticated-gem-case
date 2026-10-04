@@ -48,6 +48,14 @@ private class TemplateModels(
 ) : ItemModelProvider(output, ModTemplate.ID, helper) {
     override fun registerModels() {
         withExistingParent("gem_case_upgrade", mcLoc("item/generated")).texture("layer0", mcLoc("item/emerald"))
+        withExistingParent(
+            "advanced_gem_case_upgrade",
+            mcLoc("item/generated"),
+        ).texture("layer0", mcLoc("item/diamond"))
+        withExistingParent(
+            "gem_case_upgrade_conversion",
+            mcLoc("item/generated"),
+        ).texture("layer0", mcLoc("item/amethyst_shard"))
         withExistingParent("sample_token", mcLoc("item/generated")).texture("layer0", mcLoc("item/iron_nugget"))
     }
 }
@@ -120,5 +128,8 @@ private class TemplateLanguage(
     private fun addItemTranslations(japanese: Boolean) {
         add(ModItems.sampleToken.get(), itemName)
         add(ModItems.gemCaseUpgrade.get(), if (japanese) "Gem Caseアップグレード" else "Gem Case Upgrade")
+        add(ModItems.advancedGemCaseUpgrade.get(), if (japanese) "上位Gem Caseアップグレード" else "Advanced Gem Case Upgrade")
+        add(ModItems.gemCaseUpgradeConversion.get(), if (japanese) "Gem Case上位化" else "Gem Case Conversion")
+        add("sophisticated_gem_case.upgrade_group.gem_case", "Gem Case")
     }
 }

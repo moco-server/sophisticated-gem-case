@@ -1,5 +1,7 @@
 {
+    "item.sophisticated_gem_case.advanced_gem_case_upgrade": "Advanced Gem Case Upgrade",
     "item.sophisticated_gem_case.gem_case_upgrade": "Gem Case Upgrade",
+    "item.sophisticated_gem_case.gem_case_upgrade_conversion": "Gem Case Conversion",
     "item.sophisticated_gem_case.sample_token": "Sample Token",
     "sophisticated_gem_case.error.backpack_only": "This upgrade requires a backpack",
     "sophisticated_gem_case.error.duplicate": "Only one Gem Case upgrade is allowed",
@@ -26,5 +28,6 @@
     "sophisticated_gem_case.gui.settings": "Transfer settings",
     "sophisticated_gem_case.gui.settings_help": "Select entries to change the filter",
     "sophisticated_gem_case.gui.storage": "Storage",
-    "sophisticated_gem_case.gui.title": "Gem Case"
+    "sophisticated_gem_case.gui.title": "Gem Case",
+    "sophisticated_gem_case.upgrade_group.gem_case": "Gem Case"
 }

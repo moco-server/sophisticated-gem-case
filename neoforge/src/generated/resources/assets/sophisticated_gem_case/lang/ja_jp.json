@@ -1,5 +1,7 @@
 {
+    "item.sophisticated_gem_case.advanced_gem_case_upgrade": "上位Gem Caseアップグレード",
     "item.sophisticated_gem_case.gem_case_upgrade": "Gem Caseアップグレード",
+    "item.sophisticated_gem_case.gem_case_upgrade_conversion": "Gem Case上位化",
     "item.sophisticated_gem_case.sample_token": "サンプルトークン",
     "sophisticated_gem_case.error.backpack_only": "バッグ専用です",
     "sophisticated_gem_case.error.duplicate": "専用アップグレードは一個までです",
@@ -26,5 +28,6 @@
     "sophisticated_gem_case.gui.settings": "転送設定",
     "sophisticated_gem_case.gui.settings_help": "一覧を選択して条件を変更",
     "sophisticated_gem_case.gui.storage": "収納",
-    "sophisticated_gem_case.gui.title": "Gem Case"
+    "sophisticated_gem_case.gui.title": "Gem Case",
+    "sophisticated_gem_case.upgrade_group.gem_case": "Gem Case"
 }

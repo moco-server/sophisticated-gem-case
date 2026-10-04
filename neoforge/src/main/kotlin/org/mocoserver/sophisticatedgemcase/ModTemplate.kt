@@ -31,6 +31,10 @@ object ModTemplate {
                 ResourceLocation.fromNamespaceAndPath(ID, "gem_case_upgrade"),
                 GemCaseContainer.TYPE,
             )
+            UpgradeContainerRegistry.register(
+                ResourceLocation.fromNamespaceAndPath(ID, "advanced_gem_case_upgrade"),
+                GemCaseContainer.TYPE,
+            )
         }
     }
 
@@ -38,6 +42,8 @@ object ModTemplate {
         if (event.tabKey == CreativeModeTabs.INGREDIENTS) {
             event.accept(ModItems.sampleToken.get())
             event.accept(ModItems.gemCaseUpgrade.get())
+            event.accept(ModItems.advancedGemCaseUpgrade.get())
+            event.accept(ModItems.gemCaseUpgradeConversion.get())
         }
     }
 }

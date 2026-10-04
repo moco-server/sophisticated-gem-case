@@ -22,4 +22,14 @@ internal object ModItems {
             "sample_token",
             Item.Properties().stacksTo(checkedQuantity(MAX_STACK_SIZE)),
         )
+    val advancedGemCaseUpgrade: DeferredItem<org.mocoserver.sophisticatedgemcase.upgrade.GemCaseUpgradeItem> =
+        registry.register(
+            "advanced_gem_case_upgrade",
+            java.util.function.Supplier {
+                org.mocoserver.sophisticatedgemcase.upgrade
+                    .GemCaseUpgradeItem(supportsProcessing = true)
+            },
+        )
+    val gemCaseUpgradeConversion: DeferredItem<Item> =
+        registry.registerSimpleItem("gem_case_upgrade_conversion", Item.Properties())
 }

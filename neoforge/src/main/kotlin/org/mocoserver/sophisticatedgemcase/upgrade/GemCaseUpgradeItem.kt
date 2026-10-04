@@ -13,8 +13,12 @@ import net.p3pp3rf1y.sophisticatedcore.upgrades.UpgradeItemBase
 import net.p3pp3rf1y.sophisticatedcore.upgrades.UpgradeType
 
 /** 中身を通常交換で持ち出せない、一バッグ一個の専用upgrade。 */
-internal class GemCaseUpgradeItem : UpgradeItemBase<GemCaseUpgradeWrapper>(limits) {
+internal class GemCaseUpgradeItem(
+    val supportsProcessing: Boolean = false,
+) : UpgradeItemBase<GemCaseUpgradeWrapper>(limits) {
     override fun getType(): UpgradeType<GemCaseUpgradeWrapper> = TYPE
+
+    override fun getUpgradeGroup(): UpgradeGroup = GROUP
 
     override fun getUpgradeConflicts(): List<IUpgradeItem.UpgradeConflictDefinition> = emptyList()
 
@@ -68,6 +72,7 @@ internal class GemCaseUpgradeItem : UpgradeItemBase<GemCaseUpgradeWrapper>(limit
 
     companion object {
         val TYPE = UpgradeType(::GemCaseUpgradeWrapper)
+        private val GROUP = UpgradeGroup("gem_case", "sophisticated_gem_case.upgrade_group.gem_case")
         private val limits =
             object : IUpgradeCountLimitConfig {
                 override fun getMaxUpgradesPerStorage(

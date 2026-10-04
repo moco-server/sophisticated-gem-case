@@ -79,12 +79,12 @@ assertEquals(mapOf(0 to 1), allocation.rightUses)
 
 `replaceProcessingSettings(expected: Boolean, updated: Boolean): Boolean` は通常のmayMutate(null)を要求する。`GemMaterialHandler(storage: IStorageWrapper, level: ServerLevel, isMaterial: (ItemStack) -> Boolean): IItemHandlerModifiable` はserver専用6slot、材料の一部受入／余り／simulate無変更を扱い、保存codec予算を超える入力を拒む。levelからregistry lookupを得る。predicateを渡して新規材料を検査する。Task 2の保存テストは固定predicateを使い、Task 3以後の本番は `GemPurityRecipes.isMaterial(level, stack)` を渡す。このtaskでhandlerを材料編集UIへ登録しない。
 
-- [ ] GameTestsを先に追加し、6枠の永続往復・名前/component保持・各count限度・copy所有権、不在→空／OFF、slot重複／範囲外／不正型／未知schema／未知item／深さ17／32KiB stack超過／1MiB超過→同raw Lockedをassertする。`:neoforge:runGameTestServer` で新API未定義のREDを確認する。
-- [ ] 材料と補充componentをCustomData永続codec＋boolean-only network codecで登録する。材料summary2byte（中身あり／locked）、補充summary2byte（ON／locked）を実測する。client_summaryはserverの更新sourceにしない。材料budgetを独立ファイルへ置き、既存GemNbtBudget深さ8を緩めない。
-- [ ] 上位itemと変換用通常Itemを登録し、共有 `UpgradeGroup("gem_case", "sophisticated_gem_case.upgrade_group.gem_case")` を一つ所有して両itemへ返す。extraInsertConditionsの現物wrapper重複拒否も維持する。上位container登録、creative入手、仮item modelとja_jp／en_usをdatagen入力へ追加する。
-- [ ] wrapperの保存と取り外し条件を実装する。材料／補充Locked時も正常なcountsの手動操作・既存連携は維持し、上位は中身あり／材料Lockedならremove/swap拒否、空＋設定だけなら取り外し成功。上位＋下位の同時装着、tier／Stack倍率不変をGameTestで検査する。
-- [ ] `commitProcessing` のcallback失敗では旧counts/material componentを戻し、復元失敗をsuppressed付きで再送出する。上位専用componentを下位の通常操作で書かない。GameTestでexpected不一致／Summary source／client側／exclusive外tokenの全無変更と、補充設定だけのLockedでも正常材料の手動取出し成功を確認する。
-- [ ] `:neoforge:classes :neoforge:runData`、別呼出しの `check :neoforge:runGameTestServer` と結果parserが成功後コミットする。tracked／untracked生成差分を確認する。
+- [x] GameTestsを先に追加し、6枠の永続往復・名前/component保持・各count限度・copy所有権、不在→空／OFF、slot重複／範囲外／不正型／未知schema／未知item／深さ17／32KiB stack超過／1MiB超過→同raw Lockedをassertする。`:neoforge:runGameTestServer` で新API未定義のREDを確認する。
+- [x] 材料と補充componentをCustomData永続codec＋boolean-only network codecで登録する。材料summary2byte（中身あり／locked）、補充summary2byte（ON／locked）を実測する。client_summaryはserverの更新sourceにしない。材料budgetを独立ファイルへ置き、既存GemNbtBudget深さ8を緩めない。
+- [x] 上位itemと変換用通常Itemを登録し、共有 `UpgradeGroup("gem_case", "sophisticated_gem_case.upgrade_group.gem_case")` を一つ所有して両itemへ返す。extraInsertConditionsの現物wrapper重複拒否も維持する。上位container登録、creative入手、仮item modelとja_jp／en_usをdatagen入力へ追加する。
+- [x] wrapperの保存と取り外し条件を実装する。材料／補充Locked時も正常なcountsの手動操作・既存連携は維持し、上位は中身あり／材料Lockedならremove/swap拒否、空＋設定だけなら取り外し成功。上位＋下位の同時装着、tier／Stack倍率不変をGameTestで検査する。
+- [x] `commitProcessing` のcallback失敗では旧counts/material componentを戻し、復元失敗をsuppressed付きで再送出する。上位専用componentを下位の通常操作で書かない。GameTestでexpected不一致／Summary source／client側／exclusive外tokenの全無変更と、補充設定だけのLockedでも正常材料の手動取出し成功を確認する。
+- [x] `:neoforge:classes :neoforge:runData`、別呼出しの `check :neoforge:runGameTestServer` と結果parserが成功後コミットする。tracked／untracked生成差分を確認する。
 
 ## Task 3: 実行時recipe選択・加工計画・server確定
 

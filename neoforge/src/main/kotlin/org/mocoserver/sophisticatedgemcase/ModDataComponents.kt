@@ -8,6 +8,11 @@ import net.minecraft.network.codec.StreamCodec
 import net.minecraft.world.item.component.CustomData
 import net.neoforged.neoforge.registries.DeferredHolder
 import net.neoforged.neoforge.registries.DeferredRegister
+import org.mocoserver.sophisticatedgemcase.storage.GemMaterialCodec
+import org.mocoserver.sophisticatedgemcase.storage.GemMaterialContents
+import org.mocoserver.sophisticatedgemcase.storage.GemMaterialState
+import org.mocoserver.sophisticatedgemcase.storage.GemProcessingSettingsCodec
+import org.mocoserver.sophisticatedgemcase.storage.GemProcessingSettingsState
 import org.mocoserver.sophisticatedgemcase.storage.GemSettingsCodec
 import org.mocoserver.sophisticatedgemcase.storage.GemSettingsState
 import org.mocoserver.sophisticatedgemcase.storage.GemStorageCodec
@@ -27,6 +32,80 @@ internal object ModDataComponents {
     val gemTransferSettings: DeferredHolder<DataComponentType<*>, DataComponentType<CustomData>> =
         registry.registerComponentType<CustomData>("gem_transfer_settings") { builder ->
             builder.persistent(CustomData.CODEC).networkSynchronized(settingsSummaryCodec)
+        }
+    val gemProcessingMaterials: DeferredHolder<DataComponentType<*>, DataComponentType<CustomData>> =
+        registry.registerComponentType<CustomData>("gem_processing_materials") { builder ->
+            builder.persistent(CustomData.CODEC).networkSynchronized(materialSummaryCodec)
+        }
+    val gemProcessingSettings: DeferredHolder<DataComponentType<*>, DataComponentType<CustomData>> =
+        registry.registerComponentType<CustomData>("gem_processing_settings") { builder ->
+            builder.persistent(CustomData.CODEC).networkSynchronized(processingSettingsSummaryCodec)
+        }
+
+    private val materialSummaryCodec =
+        object : StreamCodec<RegistryFriendlyByteBuf, CustomData> {
+            override fun encode(
+                buffer: RegistryFriendlyByteBuf,
+                value: CustomData,
+            ) {
+                when (val state = GemMaterialCodec.read(value, buffer.registryAccess())) {
+                    is GemMaterialState.Ready -> {
+                        buffer.writeBoolean(
+                            (0 until GemMaterialContents.SLOT_COUNT).any { !state.contents.stackAt(it).isEmpty },
+                        )
+                        buffer.writeBoolean(false)
+                    }
+                    is GemMaterialState.ClientSummary -> {
+                        buffer.writeBoolean(state.hasContents)
+                        buffer.writeBoolean(state.locked)
+                    }
+                    is GemMaterialState.Locked -> {
+                        buffer.writeBoolean(true)
+                        buffer.writeBoolean(true)
+                    }
+                }
+            }
+
+            override fun decode(buffer: RegistryFriendlyByteBuf): CustomData =
+                CustomData.of(
+                    CompoundTag().apply {
+                        putBoolean("client_summary", true)
+                        putBoolean("has_contents", buffer.readBoolean())
+                        putBoolean("locked", buffer.readBoolean())
+                    },
+                )
+        }
+    private val processingSettingsSummaryCodec =
+        object : StreamCodec<RegistryFriendlyByteBuf, CustomData> {
+            override fun encode(
+                buffer: RegistryFriendlyByteBuf,
+                value: CustomData,
+            ) {
+                val state = GemProcessingSettingsCodec.read(value)
+                buffer.writeBoolean(
+                    when (state) {
+                        is GemProcessingSettingsState.Ready -> state.useBackpackMaterials
+                        is GemProcessingSettingsState.ClientSummary -> state.useBackpackMaterials
+                        is GemProcessingSettingsState.Locked -> false
+                    },
+                )
+                buffer.writeBoolean(
+                    when (state) {
+                        is GemProcessingSettingsState.Ready -> false
+                        is GemProcessingSettingsState.ClientSummary -> state.locked
+                        is GemProcessingSettingsState.Locked -> true
+                    },
+                )
+            }
+
+            override fun decode(buffer: RegistryFriendlyByteBuf): CustomData =
+                CustomData.of(
+                    CompoundTag().apply {
+                        putBoolean("client_summary", true)
+                        putBoolean("use_backpack_materials", buffer.readBoolean())
+                        putBoolean("locked", buffer.readBoolean())
+                    },
+                )
         }
 
     private val settingsSummaryCodec =
