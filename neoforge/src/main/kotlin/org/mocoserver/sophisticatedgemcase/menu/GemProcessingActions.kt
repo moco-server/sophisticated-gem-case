@@ -26,7 +26,9 @@ internal object GemProcessingActions {
     ): Boolean =
         currentContext(player, request)?.let { context ->
             when (request.action) {
+                GemProcessingAction.REQUEST_GEM_PREVIEWS -> selectGem(context, request)
                 GemProcessingAction.REQUEST_PREVIEW -> {
+                    context.session.batchPreviews = false
                     context.session.processingOutput = request.output
                     context.session.previewRevision = context.session.revision
                     true
@@ -86,6 +88,25 @@ internal object GemProcessingActions {
                 context.container.upgradeWrapper.replaceProcessingSettings(it.useBackpackMaterials, enabled)
         } ?: false
 
+    private fun selectGem(
+        context: Context,
+        request: GemProcessingRequest,
+    ): Boolean {
+        val session = context.session
+        val current = request.selectionId == session.processingSelectionId && request.gemId == session.processingGemId
+        if (request.selectionId < session.processingSelectionId ||
+            (request.selectionId == session.processingSelectionId && !current)
+        ) {
+            return false
+        }
+        session.batchPreviews = true
+        session.processingGemId = request.gemId
+        session.processingSelectionId = request.selectionId
+        session.previewRevision = -1
+        session.processingPreviewOutputs = emptySet()
+        return true
+    }
+
     private fun process(
         context: Context,
         player: ServerPlayer,
@@ -93,7 +114,15 @@ internal object GemProcessingActions {
     ): Boolean {
         val output = requireNotNull(request.output)
         val previewed =
-            context.session.processingOutput == output &&
+            (
+                if (context.session.batchPreviews) {
+                    output.gemId == context.session.processingGemId &&
+                        request.selectionId == context.session.processingSelectionId &&
+                        output in context.session.processingPreviewOutputs
+                } else {
+                    context.session.processingOutput == output
+                }
+            ) &&
                 context.session.previewRevision == context.session.revision
         val limit = if (request.action == GemProcessingAction.PROCESS_MANY) MAX_PROCESSING else 1
         return previewed &&

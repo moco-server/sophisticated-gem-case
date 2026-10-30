@@ -20,6 +20,9 @@ dependencies {
             because("KFFのloader範囲依存をNeoForge 21.1.252の4.0.44へ揃え、JPMSの同名module衝突を防ぐ")
         }
     }
+    testImplementation(platform(libs.junit.bom))
+    testImplementation("org.junit.jupiter:junit-jupiter")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     implementation(project(":core"))
     implementation(libs.kff)
     implementation(libs.apotheosis)
@@ -142,6 +145,9 @@ neoForge {
                 file("src/generated/resources").absolutePath,
                 "--existing",
                 file("src/main/resources").absolutePath,
+                // 元MODの基板textureも生成モデルの参照先として検査する。
+                "--existing-mod",
+                "sophisticatedbackpacks",
             )
         }
         create("gameTestServer") {
@@ -192,7 +198,7 @@ val verifyModJar =
                 "$path/integration/GemCaseConversion.class",
                 "$path/integration/GemMaterialClicks.class",
                 "$path/network/GemProcessingRequest.class",
-                "$path/client/GemProcessingPanel.class",
+                "$path/client/GemCaseModal.class",
                 "$path/mixin/GemSlotPositionAccessor.class",
                 "$path/storage/GemProcessingHandler.class",
                 "$path/storage/GemExternalTransfers.class",
@@ -228,3 +234,5 @@ val verifyModJar =
 tasks.named("build") { dependsOn(verifyModJar) }
 
 tasks.processResources { exclude("**/.cache/**") }
+
+tasks.test { useJUnitPlatform() }

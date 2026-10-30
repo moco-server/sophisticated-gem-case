@@ -15,6 +15,7 @@ import org.mocoserver.sophisticatedgemcase.processing.GemRecipeEpoch
 internal object GemNetworking {
     private var clientConsumer: (GemPage) -> Unit = {}
     private var settingsClientConsumer: (GemSettingsPage) -> Unit = {}
+    var overviewClientConsumer: (GemProcessingOverviewPayload) -> Unit = {}
     private var processingClientConsumer: (GemProcessingPreviewPayload) -> Unit = {}
 
     fun installProcessingClientConsumer(consumer: (GemProcessingPreviewPayload) -> Unit) {
@@ -30,7 +31,7 @@ internal object GemNetworking {
     }
 
     fun register(event: RegisterPayloadHandlersEvent) {
-        val registrar = event.registrar("1")
+        val registrar = event.registrar("2")
         registrar.playToServer(GemRequest.TYPE, GemRequest.CODEC) { payload, context ->
             context.enqueueWork { (context.player() as? ServerPlayer)?.let { receive(it, payload) } }
         }
@@ -39,6 +40,12 @@ internal object GemNetworking {
         }
         registrar.playToServer(GemProcessingRequest.TYPE, GemProcessingRequest.CODEC) { payload, context ->
             context.enqueueWork { (context.player() as? ServerPlayer)?.let { receiveProcessing(it, payload) } }
+        }
+        registrar.playToClient(
+            GemProcessingOverviewPayload.TYPE,
+            GemProcessingOverviewPayload.CODEC,
+        ) { payload, context ->
+            context.enqueueWork { overviewClientConsumer(payload) }
         }
         registrar.playToClient(GemPage.TYPE, GemPage.CODEC) { payload, context ->
             context.enqueueWork { clientConsumer(payload) }
@@ -83,7 +90,10 @@ internal object GemNetworking {
             val session = currentContainer.sessionFor(menu)
             if (session.allowRequest(player.level().gameTime)) {
                 val accepted = GemProcessingActions.perform(player, request)
-                if (!accepted && request.action != GemProcessingAction.REQUEST_PREVIEW) {
+                if (!accepted &&
+                    request.action != GemProcessingAction.REQUEST_PREVIEW &&
+                    request.action != GemProcessingAction.REQUEST_GEM_PREVIEWS
+                ) {
                     player.displayClientMessage(
                         net.minecraft.network.chat.Component
                             .translatable("sophisticated_gem_case.error.operation"),
@@ -184,6 +194,14 @@ internal object GemNetworking {
         container: GemCaseContainer,
         session: org.mocoserver.sophisticatedgemcase.menu.GemMenuSession,
     ) {
+        if (container.upgradeWrapper.supportsProcessing && session.batchPreviews) {
+            PacketDistributor.sendToPlayer(
+                player,
+                GemProcessingOverview.create(menu, container, session, player.serverLevel()),
+            )
+            session.previewRevision = session.revision
+            return
+        }
         val output = session.processingOutput
         if (container.upgradeWrapper.supportsProcessing && output != null) {
             val preview = GemProcessingPlanner.preview(menu.storageWrapper, player.serverLevel(), output)

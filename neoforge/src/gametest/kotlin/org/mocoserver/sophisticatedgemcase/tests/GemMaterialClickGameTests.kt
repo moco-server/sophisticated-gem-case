@@ -180,6 +180,36 @@ object GemMaterialClickGameTests {
 
     @JvmStatic
     @GameTest(template = "empty")
+    fun editsUnselectedMaterialsAndRejectsEveryClickAfterViewCloses(helper: GameTestHelper) {
+        val fixture = materialMenu(helper)
+        try {
+            helper.assertTrue(
+                fixture.container.sessionFor(fixture.menu).processingOutput == null,
+                "The boundary fixture must start without a selected output",
+            )
+            fixture.menu.carried = material(helper, 5)
+            fixture.menu.clicked(globalSlot(fixture), 0, ClickType.PICKUP, fixture.player)
+            helper.assertTrue(materialAt(fixture).count == 5, "No gem selection blocked material insertion")
+            fixture.menu.clicked(globalSlot(fixture), 1, ClickType.PICKUP, fixture.player)
+            helper.assertTrue(fixture.menu.carried.count == 3, "No gem selection blocked material recovery")
+
+            fixture.container.processingViewOpen = false
+            val before = snapshotMaterials(fixture)
+            val cursor = fixture.menu.carried.copy()
+            for (button in 0..1) {
+                fixture.menu.clicked(globalSlot(fixture), button, ClickType.PICKUP, fixture.player)
+                fixture.menu.clicked(globalSlot(fixture), button, ClickType.QUICK_MOVE, fixture.player)
+            }
+            helper.assertTrue(materialsMatch(before, fixture), "Closed view changed material contents")
+            helper.assertTrue(ItemStack.matches(cursor, fixture.menu.carried), "Closing view consumed carried items")
+            helper.succeed()
+        } finally {
+            fixture.close()
+        }
+    }
+
+    @JvmStatic
+    @GameTest(template = "empty")
     fun keepsOrdinaryShiftRoutingWhenProcessingViewIsClosed(helper: GameTestHelper) {
         val fixture = materialMenu(helper)
         try {

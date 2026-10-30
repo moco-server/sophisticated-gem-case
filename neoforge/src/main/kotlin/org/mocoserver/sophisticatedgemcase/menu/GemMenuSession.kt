@@ -39,6 +39,10 @@ internal class GemMenuSession(
     private var recipeEpoch: Long = GemRecipeEpoch.current()
     var processingOutput: GemKey? = null
     var previewRevision: Long = -1
+    var processingGemId: String? = null
+    var processingSelectionId: Long = -1
+    var batchPreviews: Boolean = false
+    var processingPreviewOutputs: Set<GemKey> = emptySet()
 
     fun refresh(
         wrapper: GemCaseUpgradeWrapper,
@@ -60,6 +64,7 @@ internal class GemMenuSession(
             settingsPages = GemSettingsPages.partition(currentSettings)
             sentRevision = -1
             previewRevision = -1
+            processingPreviewOutputs = emptySet()
         }
         materialsState = materials
         processingSettingsState = processingSettings

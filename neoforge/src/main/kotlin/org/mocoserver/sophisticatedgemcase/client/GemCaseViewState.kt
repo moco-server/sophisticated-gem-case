@@ -1,6 +1,6 @@
 package org.mocoserver.sophisticatedgemcase.client
 
-/** 収納・転送設定・加工のview選択を同じタブ内で共有する。 */
+/** 中央表示の収納・転送設定を切り替え、素材の表示許可を更新する。 */
 internal class GemCaseViewState(
     private val onViewChanged: () -> Unit,
 ) {
@@ -16,5 +16,4 @@ internal class GemCaseViewState(
 internal enum class GemCaseView {
     STORAGE,
     SETTINGS,
-    PROCESSING,
 }

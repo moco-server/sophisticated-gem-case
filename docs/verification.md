@@ -255,3 +255,140 @@ Windows新規instanceへのコピー後も全11hashとmetadata／optionsの一�
 Windows版Prismをサーバー指定なしで起動。2026-10-04 22:58のnative logで本体・JEIの発見、NVIDIA GeForce RTX 4060 Ti／OpenGL 4.6.0 NVIDIA 617.14、OpenAL、JEI GUI atlas生成を観測し、確認時147行のERROR／FATALは0件。raw起動ログはWindows instanceのminecraft/logs/latest.log、必要な起動行だけの要約は.local/verification/windows-prism/startup-summary.txt。認証情報やplayer識別子を検証記録へ転記しない。
 
 ゲームを起動したままユーザー試遊へ引き渡した。手順とinstance情報は[client-acceptance](client-acceptance.md#windows-prism試遊2026-10-04)。Windows native起動を確認したが、ゲーム内実操作／表示のユーザー検収、認証済み専用server接続、装着バッグ保存往復、pack共存は未検収。本番／JARを変更していないため同じ147件のビルド・GameTestは重複実行しない。
+
+## 中央Gem Case画面の再設計（2026-10-25〜26）
+
+2026-10-25承認の[UI設計](superpowers/specs/2026-10-25-gem-case-ui-design.md)と[計画](superpowers/plans/2026-10-25-gem-case-ui.md)に従い、文字一覧と独立加工viewを、右のアイコンから直接開く232×230 GUI pxの中央表示へ置き換えた。素材6枠、種類6列×3行、純度6枠、強化5ボタン、プレイヤーinventory、転送設定を扱う。保存schemaと加工確定の契約は維持する。通信protocolは2で、client／serverは同じ本体JARを使う。
+
+### 自動検証と配布物
+
+作業用worktreeは`/tmp/sgc-ui-20261025`、固定JavaはEclipse Adoptium JDK 21.0.12.1、cacheはrepoの`.local/gradle`。検証ログは`.local/verification/ui/`と`.local/ui-verification/`へ保存する。
+
+| 検証 | 観測結果 |
+| --- | --- |
+| 変更前baseline | root check成功。初回にJREだけのJavaを指定してtoolchain検出に失敗し、JDKへ修正した |
+| 一覧モデル先行検証 | 未実装によるRED後、検索・選択保持・所持優先・最後の行・未解決entryの3単体テスト成功 |
+| preview先行検証 | 新API未定義のRED後、5出力の世代／選択連番、wire roundtrip・最大件数・合計byte、共有512recipe探索予算、旧種類／旧revision拒否をGameTestで確認 |
+| datagen | runData成功。追跡／未追跡を確認し、生成差分はja_jp／en_usの翻訳2ファイルのみ。resourceを手編集していない |
+| 全GameTest | `ktlintFormat check :neoforge:runGameTestServer`成功、**152件の必須テストすべて成功**。新規worldへ固定依存で実行し、既存の数量・材料・加工・session・保存失敗回復も含む |
+| 最終品質・通常JAR | `ktlintFormat check :neoforge:build :neoforge:verifyModJar`成功。追加のclientキー境界修正後にも再実行し成功 |
+| JAR実内容 | 317 entries。core、中央UI、client Mixin、batch payload、翻訳を含む。旧GemProcessingPanel、外部MOD本体、tests、GUI fixture、skills、docsを含まない |
+| 通常JARの専用server | 固定runtime依存9本のSHA256をmanifestへ照合、JEI／Gateways／fixtureなし。127.0.0.1:25581、過去の保存検証worldのコピーでDone 3.906s、reload、save-all flush、stop、exit 0 |
+| 保存互換 | コピーworldのprobeに未解決Gem `missing:retained/future` 7個、転送設定、素材slot0 STONE3／slot5 DIAMOND2、素材補充ONを保持。reload前後に四componentを照会。元worldは上書きしていない |
+
+通常JARは`neoforge/build/libs/sophisticated_gem_case-0.1.0-dev.jar`、SHA256は`da038996edf4a9176ac1217a06331c4de1bf656c02b51221352eae86f1806172`。専用serverを検証した途中JARと最終JARではclient実装とclient Mixin登録だけが異なり、その他の全ZIP entryの内容一致を確認した（`final-jar.json`）。専用serverのAuthlib公開鍵取得timeoutはログへ残るため、ERRORが0件とは扱わない。認証接続の検収ではない。
+
+### 実クライアントでの観測
+
+開発限定のNeoForge版JEI 19.51.0.418入り。明示init scriptからだけ一時source set／client fixtureを追加し、本番source set・通常JARへfixtureを入れない。fixtureは新規worldを作り、server threadでバッグ・Gem・素材を準備する。以後のクリックは固定MCのMouseHandler、キーはKeyboardHandlerを通した検証用イベント入力。OSでの人手操作や認証済み通常JAR接続とは区別する。画像はMinecraft framebufferのScreenshot.grabで採取した。
+
+- 日本語・1280×960・GUI倍率4の320×240領域で、232×230の全画面が収まることを実画像で確認。12列バッグの背面に対し、種類18個、純度6枠、強化5個、素材2列×3行、player inventoryとhotbarを表示した。画像は`.local/ui-verification/screenshots/gem-case-central.png`。
+- 純度欄の左クリックでGem1個を取り出し、カーソル投入で戻した。client/serverのcursorと保存状態の変化が一致した。
+- 1回強化で素材gem_dust64→63、mysterious_scrap_metal64→61となり、client/serverが一致した。更新中は素材編集を止め、同世代preview再取得後に復帰することも確認した。
+- 素材右クリックで63個から32個をcursorへ回収し、素材31個とcursor32個がclient/serverで一致した。
+- Gemをcursorに持って画面外を押下・解放し、cursor、背面slot、同itemの近傍drop数が不変、素材view終了の`OUTSIDE_ASSERT_PASS`を得た。終了後の再表示と次回投入も機能した。
+
+### 不具合検出とレビュー
+
+独立レビューで、描画中にoverlay fieldをnullにするとCoreの後続tooltip描画でNPEになる経路と、閉じるクリックのreleaseが背面へ流れてcursorを投棄／別slotへ入れる経路を検出した。終了を描画後のtaskへ遅延し、閉じたgestureのreleaseだけをconsumeするよう修正。修正を独立担当が再読し、追加の未解決Critical／Importantなし。
+
+固定MCではAbstractContainerScreen.removedがScreen.removedへ委譲しないため、終了Mixinの対象を直接の継承元へ修正した。CodeRabbit CLI 0.8.2もこの一件を報告し、固定ソースと照合して解消した。レビューの提案文を命令として実行していない。さらに実クライアントで、BackpackScreenがCoreより先にEscapeを処理してバッグ全体を閉じるREDを検出し、Gem Case表示中だけCoreへキーを直接委譲するclient Mixinを追加。固定JARのconstructor／継承／処理順序を照合し、追加差分の独立レビューでも重大指摘なし。修正後にnative Escapeを再実行し、バッグscreenとmenu IDを維持し、client/serverのcursorがGem1個のまま、素材viewが双方falseとなるGREENを確認した（escape-green.png）。表示中のupgrade差替えもoverlayを閉じて継続し、NPEなし（replaced-upgrade.png）。最後の検収clientはハーネスのstopで保存して正常終了した。
+
+GUI検証環境では、初回にTemurin C2/PhaseLiveのnative crash、次にWSLgのswrast/LevelRendererでnative crashを記録した。一時起動だけC1とsoftpipeへ変更して実画像・操作検証に到達した。通常JAR・通常起動設定へこの回避策を追加していない。中断した起動をGradle成功とは扱わない。
+
+右側は88pxの小パネルを展開する二段階の入口から、Gem Caseアイコン直接起動へ最終調整した。12列バッグの右余白44pxへ追加パネルをはみ出させないためで、最終変更のcompile／checkは成功。中央画面の実操作観測は共通の同じmodal実装に対するものだが、この直接起動の最終人手検収は未実施。
+
+9列バッグ、英語の実表示、物理Shift、物理ボタンを押したままのEscape／resize、drag途中の配分予告、全操作の人手検収、Windows、認証接続、pack共存は未検収。player dragはrelease時にnativeへ確定する方式で、途中の配分予告まで標準画面と同じとは扱わない。素材へのdrag／数字キー／double clickは既存の安全境界を維持して拒否する。
+
+
+## 保存済みタブの復元で入口をクリックできない不具合（2026-10-26）
+
+ユーザーから、持ち物内のバックパックでGem Caseアイコンをクリックしても中央画面が開かないとの報告。初回の検収は中央画面の直接起動と新しいバッグ中心で、旧画面の展開状態を引き継ぐ条件が不足していた。
+
+Core 1.5.2.2343は保存済みopen_tab_idに対応するcontainerをisOpen=trueにし、UpgradeSettingsTab.onAfterInitでSettingsTabBase.setOpen(true)を呼ぶ。本文のないGemCaseTabのopenTabDimensionは0×0なので、onTabOpenによりタブの高さが0となる。アイコンは子Widgetとして描画されても、親のクリック判定を通過しない。固定作者ソースと公開JAR bytecodeで照合した。Prism試遊instance内の本体と固定依存のSHA256は検証版と一致し、旧展開状態の保存値もread-onlyで確認した。ユーザーのworld・instanceを変更していない。
+
+GemCaseTab.onAfterInitだけを上書きし、展開を復元せず閉じた入口の21×24 GUI pxを保つ。保存済みのopen_tab_id、Gem、素材、転送設定、サーバーの操作権限は変更しない。
+
+検証は開発限定JEI 19.51.0.418、Java21＋一時C1／softpipe、新規worldのItem contextで実施。fixtureのバッグをplayer inventoryへ同期してから開き、実Tabの座標へ固定MC MouseHandler経由で押下・解放を送り、直後と12tick後のoverlayを検査した。fixtureから中央画面を直接生成する経路は使用しない。
+
+| 条件 | 結果 |
+| --- | --- |
+| 修正前、設置・上位、旧展開状態なし | 21×24、ICON_ASSERT_PASS |
+| 修正前、携帯・下位、旧展開状態なし | 21×24、ICON_ASSERT_PASS |
+| 修正前、携帯・下位、open_tab_id=0 | 21×0、クリック直後と12tick後ともoverlay=null、ICON_ASSERT_FAIL |
+| 同じ修正前コードで保存フラグだけ外す対照実験 | 21×24へ戻り、ICON_ASSERT_PASS |
+| 修正後、携帯・下位、open_tab_id=0を保持 | 21×24、アイコンの押下・解放から中央画面が開き、12tick後も維持（ICON_ASSERT_PASS） |
+| 修正後、下位の画面をEscapeで閉じて再クリック | 同じバッグで再度ICON_ASSERT_PASS |
+| 修正後、携帯・上位、open_tab_id=0を保持 | ICON_ASSERT_PASS、素材6枠の表示と編集可否の同期を確認 |
+| 修正後、GUI倍率4→3で再初期化後にクリック | 320×240→427×320、ICON_ASSERT_PASS |
+
+ログは`.local/verification/ui/icon-saved-tab-red.log`、`icon-saved-tab-control.log`、`.local/ui-verification/icon-saved-green.log`。実画像は`.local/ui-verification/screenshots/icon-saved-tab-red.png`／`icon-saved-tab-green.png`。
+
+`ktlintFormat check :neoforge:build :neoforge:verifyModJar`成功（icon-fix-build.log）。通常JARの差分をZIP entryごとに比較し、GemCaseTab.classと行番号の変わるGemCaseTabKt.class以外が同一であることを確認した。サーバー側、wire、保存codec、resourceは不変なので、先の152件の必須GameTestの対象実装は同じ。GUIの不具合をその成功だけで検収済みとは扱わない。追加の独立レビューでCritical／Importantの指摘なし。
+
+修正版通常JARのSHA256は`4d093bd392b979906216baa6f348ee3382ce65c70f78a355d079fe833590b484`。client入口の修正だけで通信protocolは2を維持する。Prism側へは自動上書きせず、再起動して差し替える配布JARを用意する。
+
+
+## 在庫ゼロ・操作説明・転送設定の整理（2026-10-26）
+
+- 対応構成は既存のMinecraft 1.21.1／NeoForge 21.1.252と固定依存。新規fixtureワールド、携帯下位Gem Caseで検収。JEI 19.51.0.418は開発限定の既存構成を使用。
+- 在庫0の覆いをアイテムより手前へ描画。種類一覧の在庫あり／なし、暗い種類のクリック選択、純度一覧の一部0／全て0をMinecraftの実スクリーンショットで確認。
+- 転送設定の見出し・ラベルを通常文字へ、操作領域をMinecraft標準Button・EditBoxへ変更。ネイティブMouseHandlerのPRESS/RELEASEで搬出側のON/OFF、方式ALL→INCLUDE、種類選択を操作し、サーバーの設定スナップショットと再同期された表示で確認。種類→純度、検索flawless→1件、戻るも確認。右クリック・ラベル・余白は変更処理へ入らない標準Buttonの境界を使用。
+- 右側メニューの通常ホバーで名前とShiftの案内を描画確認。全6種類の詳細キーがja_jp／en_us両方の生成resourceにあることを照合。Shift中はScreen.hasShiftDown()で2行の詳細へ切替。**Shift実キー入力による詳細表示は未検証**（検収補助のAWT Robotがheadless環境で失敗、X11側に対象Waylandウィンドウなし）。この失敗は検収fixture内で、本体エラーとは区別する。
+- GUI scale 4→3では既存仕様どおりoverlayが閉じるため、アイコンをネイティブクリックして再表示。再配置後のボタン座標（戻る113,57、ON/OFF179,99）と設定変更OFF→ONを確認。閉じた直後に検収fixtureがpanelを参照したNullPointerExceptionはfixtureの操作順の誤りであり、本体は継続動作。
+- `ktlintFormat`、`:neoforge:runData`成功。datagen差分はja_jp／en_usの2ファイルのみで追跡・未追跡を確認。その後の別呼出し`ktlintFormat check :neoforge:build :neoforge:verifyModJar`成功（59 tasks）。単体テスト・解析・core境界・通常JAR内容検査を含む。サーバー・保存・通信の変更はなく、GameTestと専用サーバー接続は今回再実行していない。
+- 実入力と画像の証跡: `.local/ui-verification/refine-client.log`、同screenshotsの`refine-storage.png`、`refine-empty-selected.png`、`refine-settings.png`、`refine-settings-resized.png`。品質: `.local/verification/ui/refine-build.log`、生成: `refine-datagen.log`。
+- Coreのoverlay入力境界は固定[StorageScreenBase.java](https://github.com/P3pp3rF1y/SophisticatedCore/blob/f5ec6fb7636a867f87e37cc388077be20221abfe/src/main/java/net/p3pp3rf1y/sophisticatedcore/client/gui/StorageScreenBase.java)と取得済み作者ソースを照合。overlay中のクリックは背後のslotへ渡らない。Button／EditBoxは固定Minecraft artifactでコンパイル・実描画を確認。
+- 通常JAR SHA256: `eff83a526e09225cb04ce392fe6296d4be49a6bcfa25d3478060bfdca5d2d9f1`。Prismの導入先は自動上書きしない。
+
+
+## プレイヤー向けの表記整理（2026-10-26）
+
+- Shift案内はComponentのcopyへChatFormatting.BLUE／ITALICを適用。項目名を「ジェムをしまう」「リュックのジェムを移動」へ、説明の「通常収納」を「リュックの中身」へ変更。「未解決の保存データ」は「読み込めないジェム」とし、種類・ランクの記録と個数を保持している旨を説明。
+- `ktlintFormat :neoforge:runData`成功。生成差分は日本語14項目・英語7項目の2ファイルのみ。別呼出し`check :neoforge:build :neoforge:verifyModJar`成功（43 tasks）。スタイル指定と生成済み翻訳キーを照合。表記・装飾のみのため実GUI／GameTestは再実行していない。
+- ログ: `.local/verification/ui/wording-datagen.log`、`wording-build.log`。通常JAR SHA256: `771fa01ae4b2c2fb207e99263757d2b79ffd702a7a1539e6ff17204c786494cd`。
+
+
+## 転送条件をアイコンで選ぶ画面（2026-10-26）
+
+- 設定画面のみ横300へ拡張し、収納へ戻ると横232へ戻す。方向・方式・種類／ランク・検索・候補アイコン・ページ操作を整理。下段の見出しを条件の意味に合わせ、方式ALLでは選択を保持して無効化。候補の並びを選択で変えない。
+- 種類は10×2セル、ランクは6×1セルに名前を併記。長い名前は2行。ランク名はアイテム名用修飾句ではなく固定Apotheosis 8.9.0の`Purity.toComponent()`を使用し、通常ランクも「ふつうの」と表示する。固定[Purity.java](https://github.com/Shadows-of-Fire/Apotheosis/blob/7dd7cec26830074f1745529eb8f1f533092733d0/src/main/java/dev/shadowsoffire/apotheosis/socket/gem/Purity.java)と取得済み8.9.0 JARの翻訳を照合。可変寸法は固定CoreのWidgetBase.updateDimensions／StorageScreenBaseの中央配置を照合。
+- 説明は「今のMOD構成では」に修正。各操作・候補アイコンへ青文字・斜体のShift案内と詳細説明を追加。種類／ランクの組合せ、空選択、既存Deposit／Restockアップグレードの必要性を説明する。ja_jp／en_usの全27タイトル・詳細キーの存在を照合。
+- `ktlintFormat`成功、`:neoforge:runData`成功（生成差分はja_jp／en_usのみ、再生成written 0）。別呼出し`check :neoforge:build :neoforge:verifyModJar`成功（43 tasks）。最終のランク名変更後にも整形とcheck／build／verifyModJarを分けて再実行した。
+- 新規fixtureワールド・携帯下位版・JEI入りの固定開発構成で、ネイティブMouseHandlerのPRESS/RELEASEを使用。ALL中の候補クリックで保存変更なし、INCLUDEで種類とランクを選択して保存、EXCLUDEへの切替で選択保持、補充側がALL／選択0のままで独立、種類のページ移動、molten検索で候補を絞込、戻る、GUI320×240→480×360後のアイコン再起動と設定の再表示を確認。ログは`transfer-client.log`、`transfer-final-client.log`。
+- 最終JAR相当のコードでも新規ワールドを作り、アイコン→設定→INCLUDE→ランク→flawed選択をネイティブ入力で自動操作。サーバー側`purities=[flawed]`と金枠・チェック、全6ランク名（通常も含む）を画像で確認。`TRANSFER_SMOKE_NATIVE_INPUT_COMPLETE`、その後の正常終了を確認。
+- **Shift実キーによる展開は未検証**。検収fixtureのAWT headlessを解除しても、Robotの入力がゲーム側のShift状態へ反映されなかった。通常ホバーの青文字・斜体と、展開分岐・両言語の詳細キーは確認。未知の保存済み設定の解除と実外部転送・GameTest・専用サーバー接続は今回再実行していない。
+- 品質: `.local/verification/ui/transfer-build.log`、整形: `transfer-format.log`、生成: `transfer-datagen.log`。実GUI: `.local/ui-verification/transfer-ranked-client.log`、同screenshotsの`transfer-final-ranked.png`（最終ランク表示）、`transfer-final-types.png`、`transfer-resized.png`。起動環境だけ既存のsoftware描画／TieredStopAtLevel=1を使用。
+- 通常JARを直前版とentry単位で比較し、変更がclient UI・言語・datagenのみであることを確認。保存・通信・サーバー処理のbytecodeに差分なし。SHA256: `fb8aef146e4057df8c49c1933a19cbf76bcf9cf97128f5c5083c1cb015660b33`。
+
+
+## 詳細説明の拡充と段落表示（2026-10-26）
+
+- 収納側メニュー6項目、転送設定9項目、候補の条件説明・未知項目の説明の計17項目を日本語／英語で書き直した。詳細はタイトル＋固定2行から段落のリストへ変更。3方式、種類とランクの組合せの例、片軸／両軸空選択、方向ごとの独立、検索やページ外の選択保持、手動収納への非適用、素材の参照先と消費時点を説明する。
+- 翻訳はdatagen入力`GemHelpTranslations.kt`に分離。生成済みlangを手編集せず、`ktlintFormat :neoforge:runData`成功後、別呼出し`check :neoforge:build :neoforge:verifyModJar`成功（43 tasks）。生成差分はja_jp／en_usの2ファイル、各17キー追加。保存・通信・サーバー処理は変更なし。
+- `Font.split`で段落と書式を維持し、最大300px（画面幅−24px以下）へ折り返して、固定行数で切り捨てずに`GuiGraphics.renderTooltip(Font, List<FormattedCharSequence>, int, int)`で描画。APIは固定Minecraft 1.21.1／NeoForge 21.1.252の生成artifactのsignature・コンパイルで確認。
+- 固定依存・JEI入り・新規fixtureワールドで起動。GUI320×240の実Minecraft Fontを使い、両言語の全17説明を計測して高さが収まることを確認。タイトル込みの最大行数は日本語14、英語18。`HELP_LAYOUT_PASS`を両言語で観測。
+- 長文「どのジェムを転送するか」を検収fixtureから展開状態の内容で描画し、`HELP_PREVIEW_RENDERED`とスクリーンショットで全文の折り返し・画面内への収まりを確認。この検査は描画のプレビューであり、実Shift入力の確認とは区別する。実Shift入力、GameTest、専用サーバー接続は今回再実行していない。
+- ログ: `.local/verification/ui/help-datagen.log`、`help-build.log`、`.local/ui-verification/help-preview-client.log`。画像: `.local/ui-verification/screenshots/help-expanded-preview.png`。クライアントは正常終了し、新規fixtureワールドを保存している。
+- 直前JARとentry単位で比較し、変更がclient・言語・datagen・新規トップレベル関数のKotlin module metadataのみで、サーバー処理のbytecodeに差分がないことを確認。記録: `.local/verification/ui/help-jar.json`。通常JAR SHA256: `6f52095b819f2736fdca0309acefe194ea9b36ff84cfd068b1c649b442ddd67b`。
+
+
+## 元のGem Caseを踏まえたプレート型アイコン（2026-10-26）
+
+- 既存の16px原稿`art/item-icons/render.py`とpaletteを変更し、下位・上位・変換の3PNGを再生成。共通のプレート枠に、元のGem Caseの濃い木箱・紫帯・金属留め具を組み合わせた。下位は銀灰色の枠、上位は金枠とハンマー、変換は紫の機構面と上向き金矢印で区別する。外部MODのtextureは複製していない。
+- 標準ライブラリのみで生成し、二度の生成で三PNGのSHA256一致を確認。すべて16×16／RGBA／透過を持つpixel原稿。モデル・登録・recipe・renderer・保存・通信の変更なし。プレビュー出力先は`.local/verification/item-icons/`へ分離し、過去のacquisitionプレビューは当時の原稿から復元した。
+- `check :neoforge:build :neoforge:verifyModJar`成功（43 tasks）。通常JARを直前版とentry単位で比較し、差分が三PNGだけであること、同梱PNGと生成物が一致することを確認。画像原稿は通常Gradle buildへの依存にしない。モデルやrecipe入力を変えていないためrunData／GameTest／専用サーバーは今回再実行していない。
+- 既存の固定依存・JEI入り開発構成で新規fixtureワールドを作成。960×720／GUI320×240（倍率3）で三itemを持ち物欄へ並べ、欠落や紫黒textureがなく、下位・上位・変換の図柄を見分けられることを実画像で確認。下位の装着slot・入口タブにも新アイコンが表示され、ネイティブクリックで開くことを確認。倍率2／4やJEI一覧上の見え方は今回未検証。検収clientは正常終了している。
+- 品質ログ: `.local/verification/ui/item-icons-build.log`、生成再現性・JAR差分: `.local/verification/item-icons/verification.json`。原寸／8倍比較: 同ディレクトリの`icons-original.png`／`icons-preview.png`。実GUI: `.local/ui-verification/item-icons-client.log`と同screenshotsの`item-icons-ingame.png`。
+- 通常JAR SHA256: `762cd402e0c2f5463e1d9d5dc8c5a355225ff04e68244cbc57ce9586c6d7533b`。Prismの導入先は自動上書きしない。
+
+
+## 採用した幅広い結晶マークの反映（2026-10-27）
+
+- ユーザーが採用したTerra 6.1試作の右側（wide）を下位アイコンへそのまま使用。採用原稿の合成PNGと下位の合成プレビューが、RGBAの全画素で一致することを確認。結晶のbboxは(4,3)〜(11,12)、中心は(7.5,7.5)。上位と変換の結晶マスクも同一で、上位は金色四隅、変換は右下の上向き印だけを追加した。
+- 三item modelはlayer0に元MODの`sophisticatedbackpacks:item/upgrade_base`、layer1に自作の透過マークを設定。外部基板PNGは配布に複製しない。固定Backpacks 3.26.6.2174の`assets/sophisticatedbackpacks/models/item/upgrade_base.json`と`textures/item/upgrade_base.png`を配布JARで照合（取得元・hashは[対応構成](compatibility.md)と[固定配布版](https://modrinth.com/mod/sophisticated-backpacks/version/pJxNzk4X)）。
+- datagenで依存MODの参照検査を有効にするため、data runへ`--existing-mod sophisticatedbackpacks`を追加。固定MC1.21.1／NeoForge21.1.252のMainのOptionParserと実行で対応を確認。既存resource検査は省略していない。
+- `ktlintFormat :neoforge:runData`成功、追跡・未追跡の生成差分は三item modelのみ。別呼出し`check :neoforge:build :neoforge:verifyModJar`成功（43 tasks）。PNGを二度生成してSHA256一致を確認。三PNGは16×16 RGBAで、全ての結晶画素が採用原稿と一致する。
+- 固定依存・JEI入り開発構成、新規fixtureワールド、960×720／GUI320×240（倍率3）で三itemを持ち物欄に並べ、基板とマークの合成、上位の四隅、変換の識別印、装着slotと入口タブを実画像で確認。アイコンのネイティブクリックでGem Caseを開く`ICON_ASSERT_PASS`を観測。欠落texture・表示時例外なし、clientは正常終了。倍率2／4・JEI一覧・実player専用サーバー接続・GameTestは今回再実行していない。
+- ログ: `.local/verification/ui/hex-adopt-datagen.log`、`hex-adopt-build.log`、`.local/ui-verification/hex-adopt-client.log`。原稿比較・再現性: `.local/verification/item-icons/hex-adopt-checks.json`。基板との合成: `hex-adopt-preview.png`。実GUI: `.local/ui-verification/screenshots/hex-adopt-ingame.png`。
+- 通常JARを直前版とentry単位で比較し、差分が三PNG・三モデル・datagenクラス群のみで、保存・通信・加工・その他ゲーム処理のbytecodeに差分がないことを確認。比較: `.local/verification/item-icons/hex-adopt-jar.json`。通常JAR SHA256: `61a666c681b6c2d4a5868c1171099529a67dc043836f9937afb6283482b2d28f`。Prism側のJARは自動上書きしない。

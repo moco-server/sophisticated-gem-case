@@ -7,75 +7,65 @@ import zlib
 ROOT = Path(__file__).resolve().parents[2]
 PALETTE = {
     '.': (0, 0, 0, 0),
-    'o': (26, 32, 44, 255),
-    's': (63, 79, 98, 255),
-    'm': (119, 148, 162, 255),
-    'h': (212, 232, 226, 255),
-    't': (35, 100, 108, 255),
-    'a': (61, 170, 162, 255),
-    'g': (147, 232, 184, 255),
-    'p': (119, 61, 166, 255),
-    'v': (186, 124, 231, 255),
-    'w': (244, 220, 255, 255),
-    'b': (113, 66, 39, 255),
-    'y': (235, 182, 77, 255),
-    'l': (255, 232, 144, 255),
+    'g': (76, 36, 20, 255),
+    'y': (255, 218, 64, 255),
 }
-# 共通ケースのガラス蓋。上位は工具が輪郭の外へ出るので色以外でも区別できる。
+# 背景はitem modelから元MODの基板を参照する。配布PNGは記号と識別印だけ。
+# 共通の結晶は上下左右対称、bbox=(4,3)-(11,12)、中心=(7.5,7.5)。
 ICONS = {
     'gem_case_upgrade': [
         '................',
         '................',
-        '....ooooooo.....',
-        '...ohhhhhhmo....',
-        '..ohatttttamo...',
-        '..ohatgtttamo...',
-        '..ohagggttamo...',
-        '..ohatgtgtamo...',
-        '..ohatttggamo...',
-        '..ohattgtgamo...',
-        '..omaaaaaaamo...',
-        '..osmmmmmmmso...',
-        '..osssyhyssso...',
-        '...ossssssso....',
-        '....ooooooo.....',
+        '................',
+        '.......gg.......',
+        '......gggg......',
+        '.....gggggg.....',
+        '....gggggggg....',
+        '....gggggggg....',
+        '....gggggggg....',
+        '....gggggggg....',
+        '.....gggggg.....',
+        '......gggg......',
+        '.......gg.......',
+        '................',
+        '................',
         '................',
     ],
     'advanced_gem_case_upgrade': [
-        '............ooo.',
-        '...........ohhho',
-        '....oooooooohhmo',
-        '...ohhhhhhmosso.',
-        '..ohatttttaoobo.',
-        '..ohatvtttamoob.',
-        '..ohavwvttamobo.',
-        '..ohatvtvtamobo.',
-        '..ohattvwwaobo..',
-        '..ohattvtvobo...',
-        '..omaaaaaobo....',
-        '..osmmmmoboso...',
-        '..osssyhyssso...',
-        '...ossssssso....',
-        '....ooooooo.....',
+        '................',
+        '.yyy........yyy.',
+        '.y............y.',
+        '.y.....gg.....y.',
+        '......gggg......',
+        '.....gggggg.....',
+        '....gggggggg....',
+        '....gggggggg....',
+        '....gggggggg....',
+        '....gggggggg....',
+        '.....gggggg.....',
+        '......gggg......',
+        '.y.....gg.....y.',
+        '.y............y.',
+        '.yyy........yyy.',
         '................',
     ],
     'gem_case_upgrade_conversion': [
         '................',
-        '......oo........',
-        '.....ohmo.......',
-        '..oo.ohmo.oo....',
-        '.ohmoohhmoohmo..',
-        '..ohhhhhhhhmo...',
-        '..ohmsoosshmo...',
-        '.ohhso..osmhho..',
-        '.ommsovvoosmmmo.',
-        '..osovwwvoosso..',
-        '...osovvooyooo..',
-        '..ossooooylyo...',
-        '.ommoosoylllyo..',
-        '..oo..ooylyo....',
-        '.......oyo......',
-        '........o.......',
+        '................',
+        '................',
+        '.......gg.......',
+        '......gggg......',
+        '.....gggggg.....',
+        '....gggggggg....',
+        '....gggggggg....',
+        '....gggggggg....',
+        '....gggggggg....',
+        '.....gggggg.y...',
+        '......gggg.yyy..',
+        '.......gg...y...',
+        '............y...',
+        '................',
+        '................',
     ],
 }
 
@@ -92,7 +82,7 @@ def write_png(path, pixels):
 
 
 def main():
-    preview = [[(32, 35, 42, 255)] * 68 for _ in range(24)]
+    preview = [[(190, 190, 182, 255)] * 68 for _ in range(24)]
     for index, (name, rows) in enumerate(ICONS.items()):
         assert len(rows) == 16 and all(len(row) == 16 for row in rows)
         pixels = [[PALETTE[c] for c in row] for row in rows]
@@ -101,7 +91,7 @@ def main():
             for x, pixel in enumerate(row):
                 if pixel[3]:
                     preview[y + 4][x + 4 + 22 * index] = pixel
-    output = ROOT / '.local/verification/acquisition'
+    output = ROOT / '.local/verification/item-icons'
     write_png(output / 'icons-original.png', preview)
     scaled = [[pixel for pixel in row for _ in range(8)] for row in preview for _ in range(8)]
     write_png(output / 'icons-preview.png', scaled)

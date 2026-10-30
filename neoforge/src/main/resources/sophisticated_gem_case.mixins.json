@@ -4,5 +4,6 @@
   "package": "org.mocoserver.sophisticatedgemcase.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": ["BackpackWrapperMixin", "StorageContainerMenuMixin", "GemMergeInvoker", "GemUpgradeStorageAccessor", "DepositUpgradeMixin", "RestockUpgradeMixin", "GemSlotPositionAccessor"],
+  "client": ["client.GemStorageScreenAccessor", "client.GemStorageScreenLifecycleMixin", "client.GemScreenRemovalMixin", "client.GemBackpackScreenKeysMixin"],
   "injectors": { "defaultRequire": 1 }
 }

@@ -20,7 +20,8 @@ internal object GemProcessingPlanner {
         storage: IStorageWrapper,
         level: ServerLevel,
         output: GemKey,
-    ): GemProcessingPreview = decide(storage, level, output).preview
+        budget: GemProcessingBudget = GemProcessingBudget(),
+    ): GemProcessingPreview = decide(storage, level, output, budget).preview
 
     fun plan(
         storage: IStorageWrapper,
@@ -32,10 +33,11 @@ internal object GemProcessingPlanner {
         storage: IStorageWrapper,
         level: ServerLevel,
         output: GemKey,
+        budget: GemProcessingBudget = GemProcessingBudget(),
     ): Decision {
         val preparation = prepare(storage, level, output)
         val context = preparation.context ?: return requireNotNull(preparation.failure)
-        return chooseAndPlan(context, storage, level)
+        return chooseAndPlan(context, storage, level, budget)
     }
 
     @Suppress("ReturnCount") // upgrade・保存域・pure・個数の各契約違反を変更前に返す。
@@ -158,9 +160,9 @@ internal object GemProcessingPlanner {
         context: PlanningContext,
         storage: IStorageWrapper,
         level: ServerLevel,
+        budget: GemProcessingBudget,
     ): Decision {
         val output = GemKey(context.input.gemId, context.inputPurity.next().serializedName)
-        val budget = GemProcessingBudget()
         val recipes = GemPurityRecipes.recipes(level)
         val recipeScan =
             GemProcessingRecipeSelector.findDedicated(recipes, context.inputPurity, context.materials, budget)

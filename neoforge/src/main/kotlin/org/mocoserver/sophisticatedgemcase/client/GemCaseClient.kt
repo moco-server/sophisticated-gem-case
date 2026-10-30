@@ -24,7 +24,7 @@ internal object GemCaseClient {
                 GemProcessingViewCache.onPageReceived(page)
             }
             GemNetworking.installSettingsClientConsumer(GemSettingsCache::receive)
-            GemNetworking.installProcessingClientConsumer(GemProcessingCache::receive)
+            GemNetworking.overviewClientConsumer = GemProcessingCache::receive
             UpgradeGuiManager.registerTab(GemCaseContainer.TYPE, ::GemCaseTab)
         }
     }

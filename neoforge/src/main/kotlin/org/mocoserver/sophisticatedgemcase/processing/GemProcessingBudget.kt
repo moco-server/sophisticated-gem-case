@@ -1,6 +1,6 @@
 package org.mocoserver.sophisticatedgemcase.processing
 
-/** 一つの計画だけが所有する上限計数。上限を越える探索は部分結果を採用しない。 */
+/** 一つの計画、または全強化先previewの一要求で共有する上限計数。超過時は部分結果を採用しない。 */
 internal class GemProcessingBudget {
     private var recipes: Int = 0
     private var candidatePairs: Int = 0

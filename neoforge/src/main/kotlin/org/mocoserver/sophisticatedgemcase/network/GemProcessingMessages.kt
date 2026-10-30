@@ -17,6 +17,7 @@ internal enum class GemProcessingAction {
     PROCESS_MANY,
     SET_BACKPACK_MATERIALS,
     SET_PROCESSING_VIEW,
+    REQUEST_GEM_PREVIEWS,
 }
 
 /** 要求はoutput指定か補充切替の一つだけを持つ。 */
@@ -28,21 +29,27 @@ internal data class GemProcessingRequest(
     val action: GemProcessingAction,
     val output: GemKey?,
     val enabled: Boolean?,
+    val gemId: String? = null,
+    val selectionId: Long = 0,
 ) : CustomPacketPayload {
     override fun type(): CustomPacketPayload.Type<GemProcessingRequest> = TYPE
 
-    fun hasValidShape(): Boolean {
-        if (menuId < 0 || upgradeSlot < 0 || revision < 0) return false
-        return when (action) {
+    fun hasValidShape(): Boolean = validHeader() && validActionShape()
+
+    private fun validHeader(): Boolean = menuId >= 0 && upgradeSlot >= 0 && revision >= 0 && selectionId >= 0
+
+    private fun validActionShape(): Boolean =
+        when (action) {
+            GemProcessingAction.REQUEST_GEM_PREVIEWS ->
+                output == null && enabled == null && (gemId == null || validGemId(gemId))
             GemProcessingAction.REQUEST_PREVIEW,
             GemProcessingAction.PROCESS_ONE,
             GemProcessingAction.PROCESS_MANY,
-            -> output != null && enabled == null && validOutput(output)
+            -> output != null && enabled == null && gemId == null && validOutput(output)
             GemProcessingAction.SET_BACKPACK_MATERIALS,
             GemProcessingAction.SET_PROCESSING_VIEW,
-            -> output == null && enabled != null
+            -> output == null && enabled != null && gemId == null
         }
-    }
 
     companion object {
         const val MAX_ID_BYTES: Int = 256
@@ -64,6 +71,9 @@ internal data class GemProcessingRequest(
                     value.output?.let { writeOutput(buffer, it) }
                     buffer.writeBoolean(value.enabled != null)
                     value.enabled?.let(buffer::writeBoolean)
+                    buffer.writeBoolean(value.gemId != null)
+                    value.gemId?.let { buffer.writeUtf(it, MAX_ID_BYTES) }
+                    buffer.writeLong(value.selectionId)
                 }
 
                 override fun decode(buffer: RegistryFriendlyByteBuf): GemProcessingRequest {
@@ -76,6 +86,8 @@ internal data class GemProcessingRequest(
                             ?: throw DecoderException("Unknown Gem processing action")
                     val output = if (buffer.readBoolean()) readOutput(buffer) else null
                     val enabled = if (buffer.readBoolean()) buffer.readBoolean() else null
+                    val gemId = if (buffer.readBoolean()) buffer.readUtf(MAX_ID_BYTES) else null
+                    val selectionId = buffer.readLong()
                     val request =
                         GemProcessingRequest(
                             menuId,
@@ -85,6 +97,8 @@ internal data class GemProcessingRequest(
                             action,
                             output,
                             enabled,
+                            gemId,
+                            selectionId,
                         )
                     if (!request.hasValidShape()) throw DecoderException("Invalid Gem processing request shape")
                     if (buffer.isReadable) throw DecoderException("Unexpected Gem processing request fields")

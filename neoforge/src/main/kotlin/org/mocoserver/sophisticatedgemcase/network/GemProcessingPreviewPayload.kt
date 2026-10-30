@@ -80,7 +80,7 @@ internal data class GemProcessingPreviewPayload(
                 }
             }
 
-        private fun writePreview(
+        internal fun writePreview(
             buffer: RegistryFriendlyByteBuf,
             preview: GemProcessingPreview,
         ) {
@@ -100,7 +100,7 @@ internal data class GemProcessingPreviewPayload(
             }
         }
 
-        private fun readPreview(buffer: RegistryFriendlyByteBuf): GemProcessingPreview {
+        internal fun readPreview(buffer: RegistryFriendlyByteBuf): GemProcessingPreview {
             val output = readGemKey(buffer)
             val hasMaterials = buffer.readBoolean()
             val materialsLocked = buffer.readBoolean()
@@ -201,7 +201,7 @@ internal object GemProcessingPreviewLimits {
             encodedPreviewSize(preview) + MAX_HEADER_BYTES <= MAX_PAYLOAD_BYTES
     }
 
-    private fun encodedPreviewSize(preview: GemProcessingPreview): Long {
+    fun encodedPreviewSize(preview: GemProcessingPreview): Long {
         var bytes =
             encodedStringSize(preview.output.gemId) +
                 encodedStringSize(preview.output.purity) +

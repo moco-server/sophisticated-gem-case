@@ -46,7 +46,7 @@ internal object GemProcessingSync {
             readyPreview.preview.reason == GemProcessingReason.READY
     }
 
-    private fun sameGeneration(
+    fun sameGeneration(
         counts: GemPageAccumulator,
         settings: GemSettingsPageAccumulator,
     ): Boolean =
