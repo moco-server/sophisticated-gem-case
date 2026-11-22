@@ -22,7 +22,7 @@ MOD IDは`sophisticated_gem_case`、表示名は`Sophisticated Gem Case`、packa
 
 ## 現在の実装範囲
 
-2026-10-02承認の[下位収納仕様](superpowers/specs/2026-10-02-gem-case-storage-design.md)に沿って工程2を実装した。下位Gem Caseアップグレードはバッグごとに一個、種類×純度ごとに32,767個を保存し、バッグtierとStackアップグレードの倍率を受けない。保存はアップグレードの専用data componentを使う。schema不明・不正・処理上限超過のpayloadは原文を保持してロックし、空収納として読み替えない。形式が正しい未解決Gem ID／純度も保持し、該当entryの操作だけを制限する。
+2026-10-02承認の下位収納仕様に沿って工程2を実装した。下位Gem Caseアップグレードはバッグごとに一個、種類×純度ごとに32,767個を保存し、バッグtierとStackアップグレードの倍率を受けない。保存はアップグレードの専用data componentを使う。schema不明・不正・処理上限超過のpayloadは原文を保持してロックし、空収納として読み替えない。形式が正しい未解決Gem ID／純度も保持し、該当entryの操作だけを制限する。
 
 専用収納へ受け入れるのは作者APIで標準stackと一致するGemだけ。名前変更など追加component付きGem、無効Gem、非Gemは通常収納側に残す。入力は公開IO capabilityと通常バッグ画面の操作経路を対象とし、専用収納、通常収納の順に受け入れ、残量を入力元へ返す。slot制限とフィルタによる拒否を専用収納で迂回しない。手動操作では左／右クリック、Shift移動、一括移動を扱う。専用画面には種類検索とスクロール一覧、純度別個数、カーソルへの一個／最大stack取出、プレイヤー通常inventoryへのShift取出を設ける。
 
@@ -34,7 +34,7 @@ MOD IDは`sophisticated_gem_case`、表示名は`Sophisticated Gem Case`、packa
 
 ## 中央Gem Case画面（2026-10-25）
 
-2026-10-25承認の[UI再設計](superpowers/specs/2026-10-25-gem-case-ui-design.md)に従い、右側を小さい入口にし、既存バッグメニュー上へ232×230 GUI pxの中央表示を開く方式へ変更した。検索、6列×3行の種類一覧、純度別6枠、強化5ボタン、左の素材6枠、下のプレイヤーinventoryを同じ画面へまとめる。転送設定は中央表示内の別ページで編集し、バッグへ戻るときもカーソルとmenuを維持する。
+2026-10-25承認のUI再設計に従い、右側を小さい入口にし、既存バッグメニュー上へ232×230 GUI pxの中央表示を開く方式へ変更した。検索、6列×3行の種類一覧、純度別6枠、強化5ボタン、左の素材6枠、下のプレイヤーinventoryを同じ画面へまとめる。転送設定は中央表示内の別ページで編集し、バッグへ戻るときもカーソルとmenuを維持する。
 
 全強化先のpreviewは同じ種類・選択連番・session／revisionへ束縛し、最大5出力で既存の探索予算と32KiBのwire予算を共有する。素材編集はGem選択から分離し、無選択でも同期済みの正常な素材を操作できる。保存schemaと加工確定の契約は維持する。wireの変更に合わせ通信protocolは2とし、client／serverは同じ本体版を使用する。
 
@@ -58,15 +58,15 @@ neoforgeはGemの識別とItemStack変換、登録、保存変換、実インベ
 4. 上位の加工、材料補充、装着中の上位化。
 5. 素材・レシピ・見た目の仕上げ、通常JARとクライアント／専用サーバー、pack共存の検収。
 
-最初の区切りの[実装計画](superpowers/plans/2026-10-02-gem-case-foundation.md)と[検証記録](verification.md)を参照する。依存版の正はcatalog／Gradle properties、公開JARの取得記録は[対応構成](compatibility.md)とする。
+各工程の検証結果は[検証記録](verification.md)を参照する。依存版の正はcatalog／Gradle properties、公開JARの取得記録は[対応構成](compatibility.md)とする。
 
-工程2の[下位版設計](superpowers/specs/2026-10-02-gem-case-storage-design.md)と[実装計画](superpowers/plans/2026-10-02-gem-case-storage.md)は承認済み。追加component付きGemは通常収納に残す。保存形式、未解決ID、画面操作、暫定入手方法は同仕様を参照する。工程5で入手レシピと最終見た目を実装し、手動検収の手順を整えた。packへの採用は合意済みだが、今回packを変更・導入しない。
+工程2の下位版設計と実装計画は承認済み。追加component付きGemは通常収納に残す。保存形式、未解決ID、画面操作、暫定入手方法は「現在の実装範囲」を参照する。工程5で入手レシピと最終見た目を実装し、手動検収の手順を整えた。packへの採用は合意済みだが、今回packを変更・導入しない。
 
-工程3の[連携設計](superpowers/specs/2026-10-03-gem-case-integration-design.md)は2026-10-03に承認済み。[実装計画](superpowers/plans/2026-10-03-gem-case-integration.md)を作成し、保存・回収・専用転送・設定画面・検収の5単位で進める。実装と検証の記録は同計画と[検証記録](verification.md)へ残す。
+工程3の連携設計は2026-10-03に承認済み。実装計画は保存・回収・専用転送・設定画面・検収の5単位で進める。実装と検証の記録は[検証記録](verification.md)を参照する。
 
-工程4の[上位加工・材料枠・装着中上位化の設計案](superpowers/specs/2026-10-04-gem-case-processing-design.md)は2026-10-04に承認された。[実装計画](superpowers/plans/2026-10-04-gem-case-processing.md)へ、保存・数量配分・加工確定・変換・画面と検収を割り当てた。作者の実行時recipeを使い、専用6材料枠を優先する。補充ON時のみ同バッグ通常収納から不足分を予約し、全事前検証後に確定する。必須140 GameTest、root check、通常JAR内容検査、専用serverの起動・reload・コピーworld保存往復、JEI入りclient起動を確認した。GUI実操作と認証接続は未検収で、実測と限界は検証記録へ残す。
+工程4の上位加工・材料枠・装着中上位化の設計案は2026-10-04に承認された。実装計画へ、保存・数量配分・加工確定・変換・画面と検収を割り当てた。作者の実行時recipeを使い、専用6材料枠を優先する。補充ON時のみ同バッグ通常収納から不足分を予約し、全事前検証後に確定する。必須140 GameTest、root check、通常JAR内容検査、専用serverの起動・reload・コピーworld保存往復、JEI入りclient起動を確認した。GUI実操作と認証接続は未検収で、実測と限界は検証記録へ残す。
 
-工程5の[入手経路・見た目・手動検収の設計](superpowers/specs/2026-10-04-gem-case-acquisition-design.md)と[実装計画](superpowers/plans/2026-10-04-gem-case-acquisition.md)は承認済み。下位と変換itemの通常recipe、三種の自作16pxアイコン、summary厳密検証と転送設定の保存失敗復元を実装した。上位化は既存の装着中変換を使い、通常craftの上位化は追加しない。check／通常JAR検査／必須147 GameTestと専用serverの保存往復を確認し、独立レビューの未解決指摘なし。実playerと認証の未検収、通常JARのhash、次工程の引き渡しは[検証記録](verification.md)と[pack引き渡し](pack-handoff.md)へ記録する。
+工程5の入手経路・見た目・手動検収の設計と実装計画は承認済み。下位と変換itemの通常recipe、三種の自作16pxアイコン、summary厳密検証と転送設定の保存失敗復元を実装した。上位化は既存の装着中変換を使い、通常craftの上位化は追加しない。check／通常JAR検査／必須147 GameTestと専用serverの保存往復を確認し、独立レビューの未解決指摘なし。実playerと認証の未検収、通常JARのhash、次工程の引き渡しは[検証記録](verification.md)と[pack引き渡し](pack-handoff.md)へ記録する。
 
 ### 在庫表示・転送設定の操作部品
 

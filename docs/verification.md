@@ -70,7 +70,7 @@ Minecraft 1.21.1／NeoForge 21.1.252／Eclipse Adoptium Java 21.0.12.1／Kotlin 
 
 ## 工程2: 下位Gem Case保存・投入・取出（2026-10-03）
 
-2026-10-02承認の[下位収納仕様](superpowers/specs/2026-10-02-gem-case-storage-design.md)に従い、専用upgrade、種類×純度別32,767個の保存、公開IOと手動投入、一覧ページ通信、取出タブを実装した。構成とJava／cacheの指定は基盤検証と同じ。Pickup／Deposit／Restock連携、専用設定・フィルタ、上位加工・6材料枠・変換、通常入手recipeと最終textureは未実装。
+2026-10-02承認の下位収納仕様に従い、専用upgrade、種類×純度別32,767個の保存、公開IOと手動投入、一覧ページ通信、取出タブを実装した。構成とJava／cacheの指定は基盤検証と同じ。Pickup／Deposit／Restock連携、専用設定・フィルタ、上位加工・6材料枠・変換、通常入手recipeと最終textureは未実装。
 
 ### 実測
 
@@ -111,7 +111,7 @@ raw NBTは通常slotのネットワークcodecへ送らず、中身あり／ロ�
 
 ## 工程3: Pickup／Deposit／Restock連携と転送設定（2026-10-03〜04）
 
-[承認済み仕様](superpowers/specs/2026-10-03-gem-case-integration-design.md)に従い、処理用inventory wrapperによるPickup接続、native通常転送後の専用Deposit／Restock、二方向のON／OFFと種類・純度フィルタ、世代付き通信とタブ内設定画面を追加した。初期設定は両方向OFF／ALL。上位加工・材料枠・装着中の上位化・通常入手recipe・最終textureは後続工程。構成はMC 1.21.1／NeoForge 21.1.252／Java 21／Kotlin 2.0.21／KFF 5.5.0と固定依存manifestを維持する。
+承認済み仕様に従い、処理用inventory wrapperによるPickup接続、native通常転送後の専用Deposit／Restock、二方向のON／OFFと種類・純度フィルタ、世代付き通信とタブ内設定画面を追加した。初期設定は両方向OFF／ALL。上位加工・材料枠・装着中の上位化・通常入手recipe・最終textureは後続工程。構成はMC 1.21.1／NeoForge 21.1.252／Java 21／Kotlin 2.0.21／KFF 5.5.0と固定依存manifestを維持する。
 
 ### 保存・転送の契約
 
@@ -158,7 +158,7 @@ coreフィルタ、Pickup、専用転送、設定APIには実装前のREDを記�
 
 ## 工程4: 上位加工・専用材料枠・装着中の上位化（2026-10-04、実装・自動検証済み）
 
-[承認済み仕様](superpowers/specs/2026-10-04-gem-case-processing-design.md)と[実装計画](superpowers/plans/2026-10-04-gem-case-processing.md)に従う。構成と依存JARは工程3の固定版を維持する。検証ログは`.local/verification/processing/`へ置く。
+承認済み仕様と実装計画に従う。構成と依存JARは工程3の固定版を維持する。検証ログは`.local/verification/processing/`へ置く。
 
 | 検証 | コマンド／ログ | 観測 |
 | --- | --- | --- |
@@ -208,7 +208,7 @@ CodeRabbit CLI 0.8.2では未追跡コードもstageへ含めて確認した。�
 
 ## 工程5: 通常入手recipe・三アイコン・保存境界改善（2026-10-04）
 
-[承認spec](superpowers/specs/2026-10-04-gem-case-acquisition-design.md)と[実装計画](superpowers/plans/2026-10-04-gem-case-acquisition.md)に従う。固定版とruntime依存を維持し、core・schema・加工コストは変更しない。通常recipeは下位と変換の二つだけで、保存済み収納itemを消費する通常上位craftを追加しない。ログは`.local/verification/acquisition/`。
+承認specと実装計画に従う。固定版とruntime依存を維持し、core・schema・加工コストは変更しない。通常recipeは下位と変換の二つだけで、保存済み収納itemを消費する通常上位craftを追加しない。ログは`.local/verification/acquisition/`。
 
 | 検証 | ログ／手順 | 観測 |
 | --- | --- | --- |
@@ -230,7 +230,11 @@ CodeRabbit CLI 0.8.2では未追跡コードもstageへ含めて確認した。�
 
 初回ordinary-server.logの起動（Done 10.048s）は標準入力が閉じており検収コマンドを送れなかった。対象cwdとJava PIDを特定してSIGTERM、保存shutdownを観測したがexit 143なので正常stop成功とは記録しない。別の新規worldとTTYコンソールで検収をやり直した。既存／元worldを上書きしない。外部MODの任意連携先欠落WARNとclient音声関連ログは起動記録へ残る。
 
-三PNGは自作の16×16 RGBA透過pixel原稿。原寸と8倍previewを目視し、独立担当もケース／工具付きケース／強化部品のシルエットとresource参照を確認した。制作scriptはPython標準ライブラリのみで、通常buildはPythonにも原稿にも依存しない。材料の型・ID、タグ、shaped builder、criterionは固定MC 1.21.1／NeoForge 21.1.252の実クラスと[固定作者recipe](superpowers/specs/2026-10-04-gem-case-acquisition-design.md#固定一次資料と確認)を照合した。別objectからprotected RecipeProvider.hasは呼ばず、公開InventoryChangeTrigger.TriggerInstance.hasItemsを使う。
+三PNGは自作の16×16 RGBA透過pixel原稿。原寸と8倍previewを目視し、独立担当もケース／工具付きケース／強化部品のシルエットとresource参照を確認した。制作scriptはPython標準ライブラリのみで、通常buildはPythonにも原稿にも依存しない。材料の型・ID、タグ、shaped builder、criterionは固定MC 1.21.1／NeoForge 21.1.252の実クラスとApotheosis 8.9.0とBackpacks 3.26.6.2174の配布JARを照合した。別objectからprotected RecipeProvider.hasは呼ばず、公開InventoryChangeTrigger.TriggerInstance.hasItemsを使う。
+
+- [作者Gem Case recipe](https://github.com/Shadows-of-Fire/Apotheosis/blob/7dd7cec26830074f1745529eb8f1f533092733d0/src/generated/resources/data/apotheosis/recipe/gem_case.json)
+- [作者Gem Cutting Table recipe](https://github.com/Shadows-of-Fire/Apotheosis/blob/7dd7cec26830074f1745529eb8f1f533092733d0/src/generated/resources/data/apotheosis/recipe/gem_cutting_table.json)
+- [固定版のUpgrade Base登録](https://github.com/P3pp3rF1y/SophisticatedBackpacks/blob/fd0e91bb6cd294a778c4bea770b64d71ef09d488/src/main/java/net/p3pp3rf1y/sophisticatedbackpacks/init/ModItems.java)
 
 ### 独立レビューと未検収
 
@@ -258,7 +262,7 @@ Windows版Prismをサーバー指定なしで起動。2026-10-04 22:58のnative 
 
 ## 中央Gem Case画面の再設計（2026-10-25〜26）
 
-2026-10-25承認の[UI設計](superpowers/specs/2026-10-25-gem-case-ui-design.md)と[計画](superpowers/plans/2026-10-25-gem-case-ui.md)に従い、文字一覧と独立加工viewを、右のアイコンから直接開く232×230 GUI pxの中央表示へ置き換えた。素材6枠、種類6列×3行、純度6枠、強化5ボタン、プレイヤーinventory、転送設定を扱う。保存schemaと加工確定の契約は維持する。通信protocolは2で、client／serverは同じ本体JARを使う。
+2026-10-25承認のUI設計と計画に従い、文字一覧と独立加工viewを、右のアイコンから直接開く232×230 GUI pxの中央表示へ置き換えた。素材6枠、種類6列×3行、純度6枠、強化5ボタン、プレイヤーinventory、転送設定を扱う。保存schemaと加工確定の契約は維持する。通信protocolは2で、client／serverは同じ本体JARを使う。
 
 ### 自動検証と配布物
 
