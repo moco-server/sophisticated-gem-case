@@ -1,5 +1,6 @@
 plugins {
     `java-library`
+    `maven-publish`
     alias(libs.plugins.kotlin)
     alias(libs.plugins.moddev)
 }
@@ -166,6 +167,8 @@ neoForge {
     ideSyncTask(metadata)
 }
 tasks.jar {
+    isPreserveFileTimestamps = false
+    isReproducibleFileOrder = true
     from(
         project(":core")
             .sourceSets.main
@@ -232,6 +235,37 @@ val verifyModJar =
         )
     }
 tasks.named("build") { dependsOn(verifyModJar) }
+
+publishing {
+    publications {
+        create<MavenPublication>("mod") {
+            artifactId = "sophisticated-gem-case"
+            // 公開時は CI で検証した通常 JAR をそのまま使う。
+            val releaseJar = providers.gradleProperty("releaseJar").orNull
+            if (releaseJar == null) {
+                artifact(tasks.jar) { builtBy(verifyModJar) }
+            } else {
+                artifact(rootProject.file(releaseJar))
+            }
+            pom {
+                name.set(providers.gradleProperty("mod_name"))
+                description.set(providers.gradleProperty("mod_description"))
+                url.set(providers.gradleProperty("mod_repo_url"))
+            }
+        }
+    }
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            val repoUrl = providers.gradleProperty("mod_repo_url").get()
+            url = uri(repoUrl.replace("https://github.com/", "https://maven.pkg.github.com/"))
+            credentials {
+                username = providers.environmentVariable("GITHUB_ACTOR").orNull
+                password = providers.environmentVariable("GITHUB_TOKEN").orNull
+            }
+        }
+    }
+}
 
 tasks.processResources { exclude("**/.cache/**") }
 
