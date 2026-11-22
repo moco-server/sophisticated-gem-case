@@ -392,3 +392,10 @@ GemCaseTab.onAfterInitだけを上書きし、展開を復元せず閉じた入�
 - 固定依存・JEI入り開発構成、新規fixtureワールド、960×720／GUI320×240（倍率3）で三itemを持ち物欄に並べ、基板とマークの合成、上位の四隅、変換の識別印、装着slotと入口タブを実画像で確認。アイコンのネイティブクリックでGem Caseを開く`ICON_ASSERT_PASS`を観測。欠落texture・表示時例外なし、clientは正常終了。倍率2／4・JEI一覧・実player専用サーバー接続・GameTestは今回再実行していない。
 - ログ: `.local/verification/ui/hex-adopt-datagen.log`、`hex-adopt-build.log`、`.local/ui-verification/hex-adopt-client.log`。原稿比較・再現性: `.local/verification/item-icons/hex-adopt-checks.json`。基板との合成: `hex-adopt-preview.png`。実GUI: `.local/ui-verification/screenshots/hex-adopt-ingame.png`。
 - 通常JARを直前版とentry単位で比較し、差分が三PNG・三モデル・datagenクラス群のみで、保存・通信・加工・その他ゲーム処理のbytecodeに差分がないことを確認。比較: `.local/verification/item-icons/hex-adopt-jar.json`。通常JAR SHA256: `61a666c681b6c2d4a5868c1171099529a67dc043836f9937afb6283482b2d28f`。Prism側のJARは自動上書きしない。
+
+## Changesetsによる自動リリース（2026-11-22）
+
+- Node 24.14.0、pnpm 12.8.1、Changesets CLI 2.31.1で固定ロックから導入し、スクリプトテスト31件が成功。一時リポジトリでpatchを適用し、`package.json` と `gradle.properties` の `0.1.0-dev` が `0.1.0` へ更新され、Changesetの消費、変更履歴生成、`v0.1.0` の検出、同じ版での再検出の省略を確認した。workflowはactionlint 1.7.12で検査した。
+- Temurin 21.0.12.1で `check :neoforge:build :neoforge:verifyModJar` が成功。リリース版 `0.1.0` でdatagen後に生成リソースの追跡・未追跡差分がないことを確認。その後に通常JARを検査し、必須GameTest 152件が成功した。
+- 同じJARをMavenローカルへ登録し、`org.mocoserver:sophisticated-gem-case:0.1.0` のPOMとJAR内の版を確認した。再ビルド分、登録前、登録後のJARがバイト単位で一致した。SHA256は `554a2bbd5ae7dfbed9ea8a3bc022524e45efcf553b25396eb00fbca315c7bf8f`。ログは `.local/release-smoke.eOLu9U/` に保存した。
+- GitHub CLIとHTTP応答の模擬実行で、初回公開、Packages登録済みからの再試行、Packages登録失敗での公開中断、異なるコミットを指すタグの拒否を確認した。GitHub上のVersion PR作成、ReleaseおよびPackagesへの実登録、通常JARでの専用サーバー・クライアント接続は今回未実施。

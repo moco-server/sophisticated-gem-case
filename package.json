@@ -1,5 +1,6 @@
 {
   "name": "sophisticated_gem_case-tools",
+  "version": "0.1.0-dev",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@12.8.1",
@@ -8,9 +9,11 @@
   },
   "scripts": {
     "test": "node --test scripts/test/*.test.mjs",
-    "skills:install": "bash scripts/install-skills.sh"
+    "skills:install": "bash scripts/install-skills.sh",
+    "release:version": "changeset version && node scripts/release-version.mjs sync"
   },
   "devDependencies": {
+    "@changesets/cli": "2.31.1",
     "skills": "1.7.0"
   }
 }

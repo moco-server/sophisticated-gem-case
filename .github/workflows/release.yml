@@ -1,0 +1,96 @@
+name: Release
+on:
+  push:
+    branches:
+      - main
+permissions:
+  contents: read
+jobs:
+  changesets:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      pull-requests: write
+    concurrency:
+      group: changesets-version-pr-${{ github.ref }}
+      cancel-in-progress: true
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+      - run: pnpm --config.stateDir=.local/pnpm-state install --frozen-lockfile --ignore-scripts
+      - uses: changesets/action@a45c4d594aa4e2c509dc14a9f2b3b67ba3780d0d # v1.9.0
+        with:
+          version: pnpm run release:version
+          title: 'chore: version MOD'
+          commit: 'chore: version MOD'
+
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      tag: ${{ steps.version.outputs.tag }}
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Detect the merged Changesets version
+        id: version
+        env:
+          BEFORE_SHA: ${{ github.event.before }}
+        run: |
+          before_version=$(git show "$BEFORE_SHA:package.json" | jq -r '.version // ""')
+          node scripts/release-version.mjs plan "$before_version"
+
+  verify:
+    needs: prepare
+    if: needs.prepare.outputs.tag != ''
+    uses: ./.github/workflows/verify.yml
+
+  publish:
+    needs: [prepare, verify]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write
+      packages: write
+    concurrency:
+      group: publish-mod-${{ needs.prepare.outputs.tag }}
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c # v5.0.2
+      - uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
+        with:
+          name: mod-jar
+          path: .local/artifact
+      - name: Publish the verified JAR
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ needs.prepare.outputs.tag }}
+          RELEASE_VERSION: ${{ needs.prepare.outputs.version }}
+        run: bash scripts/publish-release.sh

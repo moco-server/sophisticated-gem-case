@@ -2,6 +2,7 @@ name: Verify
 on:
   push:
   pull_request:
+  workflow_call:
   workflow_dispatch:
     inputs:
       verify-skills:
@@ -11,7 +12,7 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: verify-${{ github.workflow }}-${{ github.ref }}
+  group: verify-${{ github.workflow }}-${{ github.workflow == 'Release' && github.sha || github.ref }}
   cancel-in-progress: true
 jobs:
   linux:

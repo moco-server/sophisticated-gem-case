@@ -17,11 +17,19 @@ node --test scripts/test/*.test.mjs
 node scripts/check-gametest-result.mjs
 ```
 
-初期化は完了済みで再実行しない。Node 24／pnpmは初期化・開発用scriptだけに使い、MOD本体と通常ビルドの依存にしない。外部skillsの導入は任意。
+初期化は完了済み。Node 24／pnpmは開発用スクリプトとリリース管理で使う。外部skillsの導入は任意。
 
 `runClient`は開発限定のNeoForge版JEIを含み、`runData`はApotheosisのデータ生成に必要なGatewaysを含む。`runServer`・GameTestにはこの二つを入れない。起動環境は`.local`、通常JARは`neoforge/build/libs`。新規の専用サーバーでは初回起動時のEULA確認・受諾が別途必要。
 
 通常JARの実行にはKFFの配布JARと対象MOD・関連依存が必要。KFFのMaven開発用aggregate単体は配布JARの代わりにしない。固定版・取得元・hash・導入側は[対応構成](docs/compatibility.md)と[依存manifest](docs/dependency-manifest.json)を参照する。クライアント試遊は[検収手順](docs/client-acceptance.md)を参照。
+
+## リリース
+
+1. 配布する変更のPRで `pnpm --config.stateDir=.local/pnpm-state install --frozen-lockfile --ignore-scripts` と `pnpm exec changeset` を実行する。対象に `sophisticated_gem_case-tools` を選び、バージョンの上げ幅と変更内容を記録して、生成された `.changeset/*.md` をコミットする。
+2. PRが `main` に入ると、Changesetsが `chore: version MOD` PRを作成または更新する。そのPRで `package.json`、`gradle.properties`、`CHANGELOG.md` の更新を確認してマージする。
+3. マージしたコミットのVerifyが成功すると、Releaseワークフローが通常JARをGitHub Packagesの `org.mocoserver:sophisticated-gem-case:<version>` に登録し、同じJARと変更履歴を付けてGitHub Release `v<version>` を公開する。自動公開の対象は `0.1.0` のような安定版。公開が途中で失敗した場合は同じワークフロー実行を再実行する。PackagesのJARとPOMの片方だけが存在する場合は公開を中断し、HTTPステータスをログに出す。
+
+Version PRを自動作成するには、リポジトリの **Settings → Actions → General → Allow GitHub Actions to create and approve pull requests** を有効にする。Actionsが作成したPRの検証が承認待ちの場合は、PR上で **Approve workflows to run** を選ぶ。公開にはワークフローの `GITHUB_TOKEN` を使う。 [Changesets Action v1.9.0](https://github.com/changesets/action/tree/v1.9.0) · [GitHub Actionsのトリガー](https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/trigger-a-workflow) · [GitHub Packages Gradleレジストリ](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-gradle-registry)
 
 ## 設計と開発資料
 
