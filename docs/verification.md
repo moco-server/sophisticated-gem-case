@@ -403,3 +403,10 @@ GemCaseTab.onAfterInitだけを上書きし、展開を復元せず閉じた入�
 - Temurin 21.0.12.1で `check :neoforge:build :neoforge:verifyModJar` が成功。リリース版 `0.1.0` でdatagen後に生成リソースの追跡・未追跡差分がないことを確認。その後に通常JARを検査し、必須GameTest 152件が成功した。
 - 同じJARをMavenローカルへ登録し、`org.mocoserver:sophisticated-gem-case:0.1.0` のPOMとJAR内の版を確認した。再ビルド分、登録前、登録後のJARがバイト単位で一致した。SHA256は `554a2bbd5ae7dfbed9ea8a3bc022524e45efcf553b25396eb00fbca315c7bf8f`。ログは `.local/release-smoke.eOLu9U/` に保存した。
 - GitHub CLIとHTTP応答の模擬実行で、初回公開、Packages登録済みからの再試行、Packages登録失敗での公開中断、異なるコミットを指すタグの拒否を確認した。GitHub上のVersion PR作成、ReleaseおよびPackagesへの実登録、通常JARでの専用サーバー・クライアント接続は今回未実施。
+
+## 初回リリース v0.1.0（2026-11-22）
+
+- Version PRで `package.json` と `gradle.properties` を `0.1.0` に揃え、Linux・WindowsのVerify成功後にmainへマージした。[Version PR #3](https://github.com/moco-server/sophisticated-gem-case/pull/3)
+- マージ後のReleaseでLinux・WindowsのVerifyが成功した。Linuxでdatagen後の生成resourceに差分がなく、通常JAR内容検査と必須GameTest 152件が成功した。[公開ワークフロー](https://github.com/moco-server/sophisticated-gem-case/actions/runs/45014558648)
+- CI成果物、ローカルのビルドJAR、GitHub Releaseから取得した `sophisticated_gem_case-0.1.0.jar` のSHA-256は `554a2bbd5ae7dfbed9ea8a3bc022524e45efcf553b25396eb00fbca315c7bf8f` で一致した。リリースタグは `6604301f5cb7299ae0f20f2e8ade7053baabb002` を指す。GitHub Packagesへの `org.mocoserver:sophisticated-gem-case:0.1.0` の登録は公開ジョブで成功した。[GitHub Release v0.1.0](https://github.com/moco-server/sophisticated-gem-case/releases/tag/v0.1.0)
+- 同じJARと依存manifestに一致するruntime JAR 9本を、新規のMinecraft 1.21.1／NeoForge 21.1.252専用サーバーで検証した。Temurin Java 21.0.13.1でローカルループバックに起動し、レシピ再読み込み、`save-all flush`、`stop`、exit 0を確認した。認証済みクライアント接続と実プレイヤー操作は未実施。ログは `.local/first-release-server.b1ygfxp0/console.log`。
