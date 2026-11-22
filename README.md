@@ -2,7 +2,7 @@
 
 ApotheosisのGem CaseをSophisticated Backpacksへ組み込むKotlinアドオン。Minecraft 1.21.1／NeoForge 21.1.252／Java 21向けに開発する。作者: samunohito、ソースライセンス: MIT。
 
-[Issue #1](https://github.com/moco-server/sophisticated-gem-case/issues/1)に基づき開発中。Gem Case下位アップグレードとGem専用収納を実装し、創造モードから入手して操作する下位収納と、Pickup／Deposit／Restock連携・転送設定を実装した。専用Deposit／Restockは初期OFFで、対応する既存アップグレードとの併用が必要。上位版の加工・6材料枠・通常収納からの材料補充と、変換アイテムによる装着中の上位化も実装した。自動検証と起動・保存往復は確認済みで、GUIの一部操作は検証用の実イベント入力で確認し、認証接続と全条件での手動検収は未実施。下位と変換アイテムの通常クラフト、三種の自作アイコンも実装した。Gem Caseの右側タブから中央の専用表示を開き、アイコン一覧・純度別の所持数・素材6枠・強化を一画面で操作できる。通常JARとクライアントでの検収状況は[検証記録](docs/verification.md)を参照する。
+[Issue #1](https://github.com/moco-server/sophisticated-gem-case/issues/1)に基づき開発中。Gem Case下位アップグレードで専用収納を使え、Pickup／Deposit／Restockとの連携と転送設定を提供する。専用Deposit／Restockは初期OFFで、対応する既存アップグレードとの併用が必要。上位版の加工・6材料枠・通常収納からの材料補充と、変換アイテムによる装着中の上位化も実装した。自動検証と起動・保存往復は確認済みで、GUIの一部操作は検証用の実イベント入力で確認し、認証接続と全条件での手動検収は未実施。下位と変換アイテムの通常クラフト、三種の自作アイコンも実装した。Gem Caseの右側タブから中央の専用表示を開き、アイコン一覧・純度別の所持数・素材6枠・強化を一画面で操作できる。通常JARとクライアントでの検収状況は[検証記録](docs/verification.md)を参照する。
 
 ## 開発と検証
 
@@ -33,7 +33,7 @@ Version PRを自動作成するには、リポジトリの **Settings → Action
 
 ## 設計と開発資料
 
-- [現在の設計](docs/design.md)、[連携調査](docs/integration-research.md)、[検証結果](docs/verification.md)
+- [現在の設計と機能別の仕様](docs/design.md)、[連携調査](docs/integration-research.md)、[検証結果](docs/verification.md)
 - [AGENTS.md](AGENTS.md)、[開発手順](.agents/skills/mod-implement/references/development.md)、[規約](.agents/skills/mod-kotlin/references/coding-conventions.md)
 - [テンプレート更新](docs/template-updates.md)、[外部skills](docs/external-skills.md)
 
